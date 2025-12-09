@@ -1,0 +1,38 @@
+D:\Comp Sci NEA\obj\Debug\net8.0\mgcb.tool.restore
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.csproj.AssemblyReference.cache
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.GeneratedMSBuildEditorConfig.editorconfig
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.AssemblyInfoInputs.cache
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.AssemblyInfo.cs
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.csproj.CoreCompileInputs.cache
+D:\Comp Sci NEA\bin\Debug\net8.0\Comp Sci NEA.exe
+D:\Comp Sci NEA\bin\Debug\net8.0\Comp Sci NEA.deps.json
+D:\Comp Sci NEA\bin\Debug\net8.0\Comp Sci NEA.runtimeconfig.json
+D:\Comp Sci NEA\bin\Debug\net8.0\Comp Sci NEA.dll
+D:\Comp Sci NEA\bin\Debug\net8.0\Comp Sci NEA.pdb
+D:\Comp Sci NEA\bin\Debug\net8.0\MonoGame.Framework.dll
+D:\Comp Sci NEA\bin\Debug\net8.0\NVorbis.dll
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\android-arm\native\libopenal.so
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\android-arm64\native\libopenal.so
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\android-x64\native\libopenal.so
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\android-x86\native\libopenal.so
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\ios-arm64\native\libopenal.a
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\iossimulator-arm64\native\libopenal.a
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\iossimulator-x64\native\libopenal.a
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\linux-arm64\native\libopenal.so
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\linux-x64\native\libopenal.so
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\osx\native\libopenal.dylib
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\win-x64\native\openal.dll
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\linux-x64\native\libSDL2-2.0.so.0
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\osx\native\libSDL2-2.0.0.dylib
+D:\Comp Sci NEA\bin\Debug\net8.0\runtimes\win-x64\native\SDL2.dll
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci.2EDFA861.Up2Date
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.dll
+D:\Comp Sci NEA\obj\Debug\net8.0\refint\Comp Sci NEA.dll
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.pdb
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.genruntimeconfig.cache
+D:\Comp Sci NEA\obj\Debug\net8.0\ref\Comp Sci NEA.dll
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\Papyrus.xnb
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\Monocraft.xnb
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\ForWhomTheBellTollsRemastered.ogg
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\ForWhomTheBellTollsRemastered.xnb
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\ScreamNoise.xnb

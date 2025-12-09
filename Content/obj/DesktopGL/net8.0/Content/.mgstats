@@ -1,0 +1,5 @@
+Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
+"D:/Comp Sci NEA/Content/ForWhomTheBellTollsRemastered.mp3","D:/Comp Sci NEA/Content/bin/DesktopGL/Content/ForWhomTheBellTollsRemastered.xnb","SongProcessor","SongContent",5121234,147,6.9040184
+"D:/Comp Sci NEA/Content/Monocraft.spritefont","D:/Comp Sci NEA/Content/bin/DesktopGL/Content/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.3867231
+"D:/Comp Sci NEA/Content/Papyrus.spritefont","D:/Comp Sci NEA/Content/bin/DesktopGL/Content/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.1889815
+"D:/Comp Sci NEA/Content/ScreamNoise.wav","D:/Comp Sci NEA/Content/bin/DesktopGL/Content/ScreamNoise.xnb","SoundEffectProcessor","SoundEffectContent",304206,304233,0.5870663

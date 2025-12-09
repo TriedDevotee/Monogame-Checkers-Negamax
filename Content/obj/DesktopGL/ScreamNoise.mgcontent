@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SourceFile>d:/Comp Sci NEA/Content/ScreamNoise.wav</SourceFile>
+  <SourceTime>2025-12-08T12:25:35.9326011+00:00</SourceTime>
+  <DestFile>d:/Comp Sci NEA/Content/bin/DesktopGL/ScreamNoise.xnb</DestFile>
+  <DestTime>2025-12-08T12:26:11.5411235+00:00</DestTime>
+  <Importer>WavImporter</Importer>
+  <ImporterTime>2025-06-02T11:31:02+01:00</ImporterTime>
+  <Processor>SoundEffectProcessor</Processor>
+  <ProcessorTime>2025-06-02T11:31:02+01:00</ProcessorTime>
+  <Parameters>
+    <Key>Quality</Key>
+    <Value>Best</Value>
+  </Parameters>
+  <Dependencies />
+  <BuildAsset />
+  <BuildOutput />
+</PipelineBuildEvent>
