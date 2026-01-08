@@ -65,15 +65,15 @@ namespace Checkers
 
             newPosition.makePositionalMove(newPos, whiteTurn);
 
-            Moves moves1 = new Moves();
+            Moves moves1 = new Moves(turn: whiteTurn);
             moves1.setUpPosition(newPosition.whitePieces.board, newPosition.blackPieces.board, newPosition.kings.board);
 
-            moveData[] newCaptures = findValidCaptures(moves1);
+            moveData[] newCaptures = findValidCaptures(moves1, fromNode.move.moveTo);
 
 
             for (int n = 0; n < newCaptures.Length; n++)
             {
-                Console.WriteLine($"Found captures: {newCaptures[n].start} to {newCaptures[n].moveTo} taking {newCaptures[n].captureSquare}");
+                //Console.WriteLine($"Found captures: {newCaptures[n].start} to {newCaptures[n].moveTo} taking {newCaptures[n].captureSquare}");
             }
 
             if (newCaptures.Length == 0) return;
@@ -87,9 +87,9 @@ namespace Checkers
 
         }
 
-        public moveData[] findValidCaptures(Moves move)
+        public moveData[] findValidCaptures(Moves move, int firstIndex = 0, int lastIndex = 64)
         {
-            moveData[] newCaptures = move.getCaptures();
+            moveData[] newCaptures = move.getCaptures(firstIndex, lastIndex);
             return newCaptures;
         }
     }

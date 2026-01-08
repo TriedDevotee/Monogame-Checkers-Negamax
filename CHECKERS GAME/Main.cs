@@ -18,79 +18,62 @@ namespace Checkers
         public Moves moves;
         public bool wasLastMoveValid;
         public bool waitingForBranchInput;
+        public List<Position> previousPositions;
+        public Piece[][] displayBoard;
 
         public Main()
         {
             moves = new Moves();
             wasLastMoveValid = true;
-        }
+            previousPositions = [new Position(moves.whitePieces.board, moves.blackPieces.board, moves.kings.board)];
 
-        public void MoveHandler(moveCache currentMove)
-        {
-            if (currentMove.start == -1 || currentMove.moveTo == -1) return;
-            if (moves.whiteTurn)
+            displayBoard = new Piece[8][];
+
+            for (int i = 0; i < 8; i++)
             {
-                makeHumanMove(currentMove); 
-            } else
-            {
-                runForAI(moves);
+                displayBoard[i] = new Piece[8];
             }
         }
 
-        public void displayBoard(ulong whiteBoard, ulong blackBoard, ulong kings)
+        public void displayPosition(Position posToDisplay)
         {
-            string whiteDisplay = Convert.ToString((long) whiteBoard, 2);
-            string blackDisplay = Convert.ToString((long) blackBoard, 2);
-            string kingsDisplay = Convert.ToString((long) kings, 2);
+            int boardHeight = 8;
+            int boardWidth = 8;
 
-            while (whiteDisplay.Length < 64)
+            for (int h = 0; h < boardHeight; h++)
             {
-                whiteDisplay = '0' + whiteDisplay;
-            }
-            while (blackDisplay.Length < 64)
-            {
-                blackDisplay = '0' + blackDisplay;
-            }
-            while (kingsDisplay.Length < 64)
-            {
-                kingsDisplay = '0' + kingsDisplay;
-            }
+                for (int w = 0; w < boardWidth; w++)
+                {
+                    int square = 63 - ((h * 8) + w);
 
-            for (int i = 0; i < whiteDisplay.Length ; i++)
-            {
-                if (i % 8 == 0) Console.WriteLine();
+                    Piece newPiece = new Piece();
 
-                if (whiteDisplay[i] == '0' && blackDisplay[i] == '0')
-                {
-                    Console.Write("0");
-                } 
-                else if (whiteDisplay[i] != '0' && kingsDisplay[i] != '0')
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.Write("K");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else if (blackDisplay[i] != '0' && kingsDisplay[i] != '0')
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("K");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else if (whiteDisplay[i] != '0')
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.Write("X");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }  
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("X");
-                    Console.ForegroundColor = ConsoleColor.White;
+                    newPiece.isFull = true;
+                    newPiece.isKing = false;
+
+                    if (posToDisplay.whitePieces.isSquareUsed(square))
+                    {
+                        newPiece.isWhite = true;
+                    }
+
+                    else if (posToDisplay.blackPieces.isSquareUsed(square))
+                    {
+                        newPiece.isWhite = false;
+                    }
+
+                    else
+                    {
+                        newPiece.isFull = false;
+                    }
+
+                    if (posToDisplay.kings.isSquareUsed(square))
+                    {
+                        newPiece.isKing = true;
+                    }
+
+                    displayBoard[h][w] = newPiece;
                 }
             }
-
-            Console.WriteLine();
         }
 
         public int searchInMoves(moveData moveCode, moveData[] moves)
@@ -105,38 +88,10 @@ namespace Checkers
             return -1;
         }
 
-        public moveData inputHandler()
-        {
-            string pattern = "[0-9]+";
-            string userInput;
-
-            Console.Write("Enter an input square:\n>>>  ");
-            userInput = Console.ReadLine();
-
-            while (!Regex.IsMatch(userInput, pattern))
-            {
-                Console.Write("Try again. Enter an input square:\n>>>  ");
-                userInput = Console.ReadLine();
-            }
-            int start = Convert.ToInt32(userInput);
-
-            Console.Write("Enter a square to move too:\n>>>  ");
-            userInput = Console.ReadLine();
-
-            while (!Regex.IsMatch(userInput, pattern))
-            {
-                Console.Write("Try again. Enter a square to move too:\n>>>  ");
-                userInput = Console.ReadLine();
-            }
-            
-            int moveTo = Convert.ToInt32(userInput);
-
-            return new moveData(start, moveTo);
-        }
-
+        
         public bitboardWrapper moveMaker(Bitboard pieces, Bitboard enemies, Bitboard kings, moveData move, bool whiteTurn)
         {
-            Console.WriteLine($"Making move {move.start} to {move.moveTo} taking {move.captureSquare}");
+            //Console.WriteLine($"Making move {move.start} to {move.moveTo} taking {move.captureSquare}");
 
             pieces.clearSquare(move.start);
             pieces.setSquare(move.moveTo);
@@ -149,7 +104,7 @@ namespace Checkers
 
             if (move.moveTo / 8 == 7 || move.moveTo / 8 == 0)
             {
-                Console.WriteLine($"Made a new King at {move.moveTo}");
+                //Console.WriteLine($"Made a new King at {move.moveTo}");
 
                 kings.setSquare(move.moveTo);
             }
@@ -211,10 +166,10 @@ namespace Checkers
                 }
                 
             } else {
-                Console.WriteLine($"Length of moves: {allPossibleMoves.Length}");
+                //Console.WriteLine($"Length of moves: {allPossibleMoves.Length}");
                 for (int i = 0; i < allPossibleMoves.Length; i++)
                 {
-                    Console.WriteLine($"Possible move {i} -> {allPossibleMoves[i].start}, {allPossibleMoves[i].moveTo}");
+                    //Console.WriteLine($"Possible move {i} -> {allPossibleMoves[i].start}, {allPossibleMoves[i].moveTo}");
                 }
             }
         }
@@ -238,11 +193,11 @@ namespace Checkers
 
             List<moveData> chosenPath = buildPathingTree(allPaths);
 
-            Console.WriteLine($"Number of moves to make: {chosenPath.Count}");
+            //Console.WriteLine($"Number of moves to make: {chosenPath.Count}");
 
             for (int i = 0; i < chosenPath.Count; i++)
             {
-                Console.WriteLine($"Applying move {chosenPath[i].start} to {chosenPath[i].moveTo}");
+                //Console.WriteLine($"Applying move {chosenPath[i].start} to {chosenPath[i].moveTo}");
 
                 bitboardWrapper wrapper;
 
@@ -259,7 +214,7 @@ namespace Checkers
 
         public List<moveData> buildPathingTree(List<List<ChainNode>> Paths, bool isBot = false, int depthRemaining = 0, bool whiteTurn = true, NegamaxHandler Ai = null)
         {
-            Console.WriteLine($"Pathing function called.");
+            //Console.WriteLine($"Pathing function called.");
 
             int generation = 0;
             bool remainingNodes = true;
@@ -283,7 +238,7 @@ namespace Checkers
                         {
                             Deviants.Add(Paths[i][generation].move);
 
-                            Console.WriteLine($"Found a deviant! {Paths[i][generation].move.start} to {Paths[i][generation].move.moveTo}, generation = {generation}");
+                            //Console.WriteLine($"Found a deviant! {Paths[i][generation].move.start} to {Paths[i][generation].move.moveTo}, generation = {generation}");
                         }
                     }
 
@@ -306,7 +261,6 @@ namespace Checkers
 
             return finalPath;
         }
-
         public void runForAI(Moves moves)
         {
             NegamaxHandler negamax = new NegamaxHandler(moves.whitePieces, moves.blackPieces, moves.kings, moves.whiteTurn);
@@ -314,6 +268,20 @@ namespace Checkers
             moveData bestMove = negamax.getMove();
 
             bitboardWrapper wrapper;
+
+
+            if (bestMove.captureSquare != -1)
+            {
+                Position currentPosition = new Position(moves.whitePieces.board, moves.blackPieces.board, moves.kings.board);
+
+                ChainedCaptures(currentPosition, bestMove);
+
+                if (!waitingForBranchInput)
+                    moves.whiteTurn = !moves.whiteTurn;
+
+                return;
+
+            }
 
             if (moves.whiteTurn)
             {
@@ -377,6 +345,7 @@ namespace Checkers
             // 0 - No gameOver
             // 1 - White Wins
             // 2 - Black Wins
+            // 3 - Draw
 
             static int countPieces(ulong board)
             {
@@ -391,6 +360,8 @@ namespace Checkers
                 return count;
             }
 
+            moveData[] availableMoves = moves.getAllMoves();
+
             int whitePieces = countPieces(moves.whitePieces.board);
             int blackPieces = countPieces(moves.blackPieces.board);
 
@@ -400,6 +371,9 @@ namespace Checkers
             } else if (blackPieces == 0)
             {
                 return 1;
+            } else if (availableMoves.Length == 0)
+            {
+                return 3;
             } else
             {
                 return 0;

@@ -4,10 +4,10 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>D:/Comp Sci NEA/Content/ForWhomTheBellTollsRemastered.mp3</File>
+    <File>D:/Comp Sci NEA/Content/download (1).jpg</File>
+    <File>D:/Comp Sci NEA/Content/download.jpg</File>
     <File>D:/Comp Sci NEA/Content/Monocraft.spritefont</File>
     <File>D:/Comp Sci NEA/Content/Papyrus.spritefont</File>
-    <File>D:/Comp Sci NEA/Content/ScreamNoise.wav</File>
   </SourceFiles>
   <DestFiles>
     <File xsi:nil="true" />

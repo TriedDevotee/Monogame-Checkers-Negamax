@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SourceFile>d:/Comp Sci NEA/Content/Papyrus.spritefont</SourceFile>
-  <SourceTime>2025-12-05T15:44:01.4321968+00:00</SourceTime>
+  <SourceTime>2025-12-09T12:56:07.151255+00:00</SourceTime>
   <DestFile>d:/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb</DestFile>
-  <DestTime>2025-12-08T09:53:34.6225182+00:00</DestTime>
+  <DestTime>2026-01-06T09:04:20.9700148+00:00</DestTime>
   <Importer>FontDescriptionImporter</Importer>
   <ImporterTime>2025-06-02T11:31:02+01:00</ImporterTime>
   <Processor>FontDescriptionProcessor</Processor>

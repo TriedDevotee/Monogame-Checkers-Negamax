@@ -36,3 +36,6 @@ D:\Comp Sci NEA\bin\Debug\net8.0\Content\Monocraft.xnb
 D:\Comp Sci NEA\bin\Debug\net8.0\Content\ForWhomTheBellTollsRemastered.ogg
 D:\Comp Sci NEA\bin\Debug\net8.0\Content\ForWhomTheBellTollsRemastered.xnb
 D:\Comp Sci NEA\bin\Debug\net8.0\Content\ScreamNoise.xnb
+D:\Comp Sci NEA\obj\Debug\net8.0\Comp Sci NEA.sourcelink.json
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\download.xnb
+D:\Comp Sci NEA\bin\Debug\net8.0\Content\download (1).xnb

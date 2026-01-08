@@ -62,22 +62,18 @@ namespace Checkers
             int whiteKings = countPieces(board.kings.board & board.whitePieces.board);
             int blackKings = countPieces(board.kings.board & board.blackPieces.board);
 
-            if (whiteTurn)
-            {
-                return 3 * (whitePieces - blackPieces) + (whiteKings - blackKings);
-            } else
-            {
-                 return 3 * (blackPieces - whitePieces) + (blackKings - whiteKings);
-            } 
+            int eval = 2 * (whitePieces - blackPieces) + (whiteKings - blackKings);
+
+            return whiteTurn? eval : -eval; 
 
         }
 
         public int Negamax(int depth, Position board, bool whiteTurn, int alpha, int beta)
         {
             if (depth == 0) return evaluation(board, whiteTurn);
-            if (board.isGameOver()) return -1000;
+            if (board.isGameOver()) return -100000000;
 
-            Moves moves = new Moves();
+            Moves moves = new Moves(whiteTurn);
             moves.setUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
 
             moveData[] possibleMoves = moves.getAllMoves();
@@ -154,13 +150,13 @@ namespace Checkers
         public moveData GetBestMove(Position board, bool whiteTurn)
         {
 
-            int maxDepth = 11;
+            int maxDepth = 9;
 
-            Moves moves = new Moves();
+            Moves moves = new Moves(whiteTurn);
 
             moves.whiteTurn = whiteTurn;
 
-            Console.WriteLine($"AI MOVE GENERATION FOR: {(moves.whiteTurn ? "WHITE" : "BLACK")}");
+            //Console.WriteLine($"AI MOVE GENERATION FOR: {(moves.whiteTurn ? "WHITE" : "BLACK")}");
 
             moves.setUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
 

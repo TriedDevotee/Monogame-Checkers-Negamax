@@ -1,5 +1,5 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
-"d:/Comp Sci NEA/Content/ForWhomTheBellTollsRemastered.mp3","d:/Comp Sci NEA/Content/bin/DesktopGL/ForWhomTheBellTollsRemastered.xnb","SongProcessor","SongContent",5121234,147,7.655927
-"d:/Comp Sci NEA/Content/Monocraft.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.310632
-"d:/Comp Sci NEA/Content/Papyrus.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.0326848
-"d:/Comp Sci NEA/Content/ScreamNoise.wav","d:/Comp Sci NEA/Content/bin/DesktopGL/ScreamNoise.xnb","SoundEffectProcessor","SoundEffectContent",304206,304233,0.550059
+"d:/Comp Sci NEA/Content/download (1).jpg","d:/Comp Sci NEA/Content/bin/DesktopGL/download (1).xnb","TextureProcessor","Texture2DContent",7389,201069,0.1734479
+"d:/Comp Sci NEA/Content/download.jpg","d:/Comp Sci NEA/Content/bin/DesktopGL/download.xnb","TextureProcessor","Texture2DContent",8472,201485,0.2907394
+"d:/Comp Sci NEA/Content/Monocraft.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.1392511
+"d:/Comp Sci NEA/Content/Papyrus.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.0715778

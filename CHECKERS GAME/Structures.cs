@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Checkers
@@ -129,9 +130,10 @@ namespace Checkers
         }
     }
 
-    public struct returnData
+    public struct Piece
     {
-        bool isWhite;
-        bool isKing;
+        public bool isFull;
+        public bool isWhite;
+        public bool isKing;
     }
 }
