@@ -1,5 +1,3 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
-"d:/Comp Sci NEA/Content/download (1).jpg","d:/Comp Sci NEA/Content/bin/DesktopGL/download (1).xnb","TextureProcessor","Texture2DContent",7389,201069,0.1734479
-"d:/Comp Sci NEA/Content/download.jpg","d:/Comp Sci NEA/Content/bin/DesktopGL/download.xnb","TextureProcessor","Texture2DContent",8472,201485,0.2907394
-"d:/Comp Sci NEA/Content/Monocraft.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.1392511
-"d:/Comp Sci NEA/Content/Papyrus.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.0715778
+"d:/Comp Sci NEA/Content/Monocraft.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.3156785
+"d:/Comp Sci NEA/Content/Papyrus.spritefont","d:/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.0796691

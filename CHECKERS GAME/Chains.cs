@@ -3,41 +3,50 @@ using System.Collections.Generic;
 
 namespace Checkers
 {
+    /// <summary>
+    /// Creates a tree of all available captures from point n <br/>
+    /// Is later expanded to find all available paths.
+    /// </summary>
     class ChainTree
     {
-        public List<ChainNode> captureTree;
-        public Position currentPosition;
-        public bool whiteTurn;
-        public Moves moves;
+        private bool WhiteTurn;
+        private Moves Moves;
+        private Position CurrentPosition;
+        private readonly List<ChainNode> captureTree;
+        public IReadOnlyList<ChainNode> CaptureTree => captureTree;
 
         public ChainTree(Position current, bool turn)
         {
             captureTree = new List<ChainNode>();
-            currentPosition = current;
-            whiteTurn = turn;
+            CurrentPosition = current;
+            WhiteTurn = turn;
 
-            moves = new Moves(whiteTurn);
-            moves.setUpPosition(currentPosition.whitePieces.board, currentPosition.blackPieces.board, currentPosition.kings.board);
+            Moves = new Moves(WhiteTurn);
+            Moves.SetUpPosition(CurrentPosition.whitePieces.board, CurrentPosition.blackPieces.board, CurrentPosition.kings.board);
 
-            manageChains(); 
+            ManageChains(); 
         }
 
-        public void manageChains()
+        /// <summary>
+        /// Main tree loop. Sets up preexisting captures in position, then recursively explores paths for each following capture.
+        /// </summary>
+        private void ManageChains()
         {
             
-            moveData[] captures = moves.getCaptures();
+            moveData[] captures = Moves.GetCaptures();
             AddBaseCaptures(captures);
-
-            int count = 0;
 
             foreach (ChainNode node in captureTree)
             {
-                ExploreCaptures(node.move, currentPosition, node);
-                count ++;
+                ExploreCaptures(node.move, CurrentPosition, node);
             }
         }
 
-        public void AddBaseCaptures(moveData[] captures)
+        /// <summary>
+        /// Adds all immediate capture moves in the current position.
+        /// </summary>
+        /// <param name="captures"></param>
+        private void AddBaseCaptures(moveData[] captures)
         {
             for (int i = 0; i < captures.Length; i++)
             {
@@ -45,36 +54,29 @@ namespace Checkers
             }
         }
 
-        public void ExploreCaptures(moveData newPos, Position currentPosition, ChainNode fromNode)
+        /// <summary>
+        /// Recursive capture explorer. <br/>
+        ///     - Creates new iteration of position <br/>
+        ///     - Finds all captures <br/>
+        ///     - Adds them to tree <br/>
+        /// </summary>
+        /// <param name="newPos"></param>
+        /// <param name="position"></param>
+        /// <param name="fromNode"></param>
+        private void ExploreCaptures(moveData newPos, Position position, ChainNode fromNode)
         {
-            /*
-                - Get a list of all base level captures
-                - For each capture:
-                    - Update position (pass in move and originating node)
-                    - Find all captures
-
-                    - If length == 0, return
-                    - Else, recurse through the captures
-            */
-
             Position newPosition = new Position(
-                currentPosition.whitePieces.board,
-                currentPosition.blackPieces.board,
-                currentPosition.kings.board
+                position.whitePieces.board,
+                position.blackPieces.board,
+                position.kings.board
             );
 
-            newPosition.makePositionalMove(newPos, whiteTurn);
+            newPosition.makePositionalMove(newPos, WhiteTurn);
 
-            Moves moves1 = new Moves(turn: whiteTurn);
-            moves1.setUpPosition(newPosition.whitePieces.board, newPosition.blackPieces.board, newPosition.kings.board);
+            Moves nextMoves = new Moves(turn: WhiteTurn);
+            nextMoves.SetUpPosition(newPosition.whitePieces.board, newPosition.blackPieces.board, newPosition.kings.board);
 
-            moveData[] newCaptures = findValidCaptures(moves1, fromNode.move.moveTo);
-
-
-            for (int n = 0; n < newCaptures.Length; n++)
-            {
-                //Console.WriteLine($"Found captures: {newCaptures[n].start} to {newCaptures[n].moveTo} taking {newCaptures[n].captureSquare}");
-            }
+            moveData[] newCaptures = FindValidCaptures(nextMoves, fromNode.move.moveTo);
 
             if (newCaptures.Length == 0) return;
 
@@ -87,9 +89,17 @@ namespace Checkers
 
         }
 
-        public moveData[] findValidCaptures(Moves move, int firstIndex = 0, int lastIndex = 64)
+        /// <summary>
+        /// Finds all valid captures in a position. <br/>
+        /// Index determined by the first/last index parameters.
+        /// </summary>
+        /// <param name="move"></param>
+        /// <param name="firstIndex"></param>
+        /// <param name="lastIndex"></param>
+        /// <returns></returns>
+        private moveData[] FindValidCaptures(Moves move, int firstIndex = 0, int lastIndex = 64)
         {
-            moveData[] newCaptures = move.getCaptures(firstIndex, lastIndex);
+            moveData[] newCaptures = move.GetCaptures(firstIndex, lastIndex);
             return newCaptures;
         }
     }

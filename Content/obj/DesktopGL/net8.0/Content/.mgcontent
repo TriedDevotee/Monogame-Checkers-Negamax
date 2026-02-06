@@ -4,14 +4,10 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>D:/Comp Sci NEA/Content/download (1).jpg</File>
-    <File>D:/Comp Sci NEA/Content/download.jpg</File>
-    <File>D:/Comp Sci NEA/Content/Monocraft.spritefont</File>
-    <File>D:/Comp Sci NEA/Content/Papyrus.spritefont</File>
+    <File>D:/Coding/Comp Sci NEA/Content/Monocraft.spritefont</File>
+    <File>D:/Coding/Comp Sci NEA/Content/Papyrus.spritefont</File>
   </SourceFiles>
   <DestFiles>
-    <File xsi:nil="true" />
-    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Comp Sci NEA\\Comp Sci NEA.csproj": {}
+    "D:\\Coding\\Comp Sci NEA\\Comp Sci NEA.csproj": {}
   },
   "projects": {
-    "D:\\Comp Sci NEA\\Comp Sci NEA.csproj": {
+    "D:\\Coding\\Comp Sci NEA\\Comp Sci NEA.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Comp Sci NEA\\Comp Sci NEA.csproj",
+        "projectUniqueName": "D:\\Coding\\Comp Sci NEA\\Comp Sci NEA.csproj",
         "projectName": "Comp Sci NEA",
-        "projectPath": "D:\\Comp Sci NEA\\Comp Sci NEA.csproj",
+        "projectPath": "D:\\Coding\\Comp Sci NEA\\Comp Sci NEA.csproj",
         "packagesPath": "C:\\Users\\bento\\.nuget\\packages\\",
-        "outputPath": "D:\\Comp Sci NEA\\obj\\",
+        "outputPath": "D:\\Coding\\Comp Sci NEA\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\bento\\AppData\\Roaming\\NuGet\\NuGet.Config"

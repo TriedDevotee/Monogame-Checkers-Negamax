@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -6,79 +7,65 @@ namespace Checkers
 {
     public class Moves
     {
-        public Bitboard whitePieces { get; private set; }
-        public Bitboard blackPieces { get; private set; }
-        public Bitboard allPieces { get; private set; }
-        public Bitboard kings { get; private set; }
+        public Bitboard WhitePieces { get; private set; }
+        public Bitboard BlackPieces { get; private set; }
+        public Bitboard AllPieces { get; private set; }
+        public Bitboard Kings { get; private set; }
+        public bool WhiteTurn {get; private set;}
+
         private PieceMasks masks;
-        public bool whiteTurn;
-        public int overallScore;
+        private const ulong whiteStart = 0x000000000055AA55;
+        private const ulong blackStart = 0xAA55AA0000000000;
+        private const ulong kingstart = 0; 
 
-        public Moves(bool turn = true)
+        public Moves(bool turn)
         {
-            whitePieces = new Bitboard(0x000000000055AA55);
-            blackPieces = new Bitboard(0xAA55AA0000000000);
+            WhitePieces = new Bitboard(whiteStart);
+            BlackPieces = new Bitboard(blackStart);
+            Kings = new Bitboard(kingstart);
 
-            //PROMOTION CHAIN TESTING
-
-            //whitePieces = new Bitboard(0x0000000000002000);
-            //blackPieces = new Bitboard(0x0014004000400000);
-
-            //ANTIPROMOTION CHAIN TESTING
-
-            //whitePieces = new Bitboard(0x0000000000008000);
-            //blackPieces = new Bitboard(0x0000001400400000);
-
-            //BRANCH CHAIN TESTING
-
-            //whitePieces = new Bitboard(0x0000000000008000);
-            //blackPieces = new Bitboard(0x0014001400400000);
-
-            kings = new Bitboard(0);
             masks = new PieceMasks();
-            allPieces = new Bitboard(whitePieces.board | blackPieces.board);
-            whiteTurn = turn;
-
-            overallScore = 0;
+            AllPieces = new Bitboard(WhitePieces.board | BlackPieces.board);
+            WhiteTurn = turn;
         }
 
-        public void setUpPosition(ulong white, ulong black, ulong k)
+        public void SetUpPosition(ulong white, ulong black, ulong k)
         {
-            whitePieces = new Bitboard(white);
-            blackPieces = new Bitboard(black);
-            kings = new Bitboard(k);
+            WhitePieces = new Bitboard(white);
+            BlackPieces = new Bitboard(black);
+            Kings = new Bitboard(k);
         }
 
-        public moveData[] getAllMoves()
+        public moveData[] GetAllMoves()
         {
-            moveData[] captures = getCaptures();
+            moveData[] captures = GetCaptures();
 
             if (captures.Length == 0)
             {
-                return getNormalMoves();
+                return GetNormalMoves();
             }
             return captures;
         }
 
-        public moveData[] getChainedCaptures(int startSquare)
+        public moveData[] GetChainedCaptures(int startSquare)
         {
 
-            return getCaptures(startSquare, startSquare+1);
+            return GetCaptures(startSquare, startSquare+1);
         }
 
-        public moveData[] getCaptures(int firstIndex = 0, int lastIndex = 64)
+        public moveData[] GetCaptures(int firstIndex = 0, int lastIndex = 64)
         {
 
-            void tryCapture(List<moveData> moves, int startSquare, int landing, int capture, Bitboard reversePieces)
+            void TryCapture(List<moveData> moves, int startSquare, int landing, int capture, Bitboard reversePieces)
             {
                 if (landing == -1 || capture == -1) return;
-                if (!allPieces.isSquareUsed(landing) && reversePieces.isSquareUsed(capture))
+                if (!AllPieces.isSquareUsed(landing) && reversePieces.isSquareUsed(capture))
                 {
                     moves.Add(new moveData(startSquare, landing, capture));
                 }
             }
 
-            getAllPieces();
+            GetAllPieces();
 
             Bitboard currentKings;
             Bitboard currentPieces;
@@ -88,20 +75,20 @@ namespace Checkers
             Dictionary<int, int[]> nextMoveMask;
             Dictionary<int, int[]> nextEnemyMoveMask;
 
-            if (whiteTurn)
+            if (WhiteTurn)
             {
-                currentKings = new Bitboard(whitePieces.board & kings.board);
-                currentPieces = new Bitboard(whitePieces.board);
-                reversePieces = new Bitboard(blackPieces.board);
+                currentKings = new Bitboard(WhitePieces.board & Kings.board);
+                currentPieces = new Bitboard(WhitePieces.board);
+                reversePieces = new Bitboard(BlackPieces.board);
                 currentCaptures = masks.WhiteCaptures;
                 reverseCaptures = masks.BlackCaptures;
                 nextMoveMask = masks.WhiteMasks;
                 nextEnemyMoveMask = masks.BlackMasks;
             } else
             {
-                currentKings = new Bitboard(blackPieces.board & kings.board);
-                currentPieces = new Bitboard(blackPieces.board);
-                reversePieces = new Bitboard(whitePieces.board);
+                currentKings = new Bitboard(BlackPieces.board & Kings.board);
+                currentPieces = new Bitboard(BlackPieces.board);
+                reversePieces = new Bitboard(WhitePieces.board);
                 currentCaptures = masks.BlackCaptures;
                 reverseCaptures = masks.WhiteCaptures;
                 nextMoveMask = masks.BlackMasks;
@@ -118,18 +105,16 @@ namespace Checkers
                     int[] availables = currentCaptures[i];
                     int[] nextMove = nextMoveMask[i];
 
-                    tryCapture(moves, i, availables[0], nextMove[0], reversePieces);
-                    tryCapture(moves, i, availables[1], nextMove[1], reversePieces);
+                    TryCapture(moves, i, availables[0], nextMove[0], reversePieces);
+                    TryCapture(moves, i, availables[1], nextMove[1], reversePieces);
 
                     if (currentKings.isSquareUsed(i))
                     {
-                        //Console.WriteLine($"Found king on square {i}");
-
                         availables = reverseCaptures[i];
                         nextMove = nextEnemyMoveMask[i];
 
-                        tryCapture(moves, i, availables[0], nextMove[0], reversePieces);
-                        tryCapture(moves, i, availables[1], nextMove[1], reversePieces);
+                        TryCapture(moves, i, availables[0], nextMove[0], reversePieces);
+                        TryCapture(moves, i, availables[1], nextMove[1], reversePieces);
                     }
                 }
             }
@@ -137,30 +122,30 @@ namespace Checkers
             return moves.ToArray();
         }
 
-        public moveData[] getNormalMoves()
+        public moveData[] GetNormalMoves()
         {
             Bitboard currentKings;
             Bitboard currentPieces;
             Dictionary<int, int[]> currentMask;
             Dictionary<int, int[]> reverseMask;
 
-            if (whiteTurn)
+            if (WhiteTurn)
             {
-                currentKings = new Bitboard(whitePieces.board & kings.board);
-                currentPieces = new Bitboard(whitePieces.board);
+                currentKings = new Bitboard(WhitePieces.board & Kings.board);
+                currentPieces = new Bitboard(WhitePieces.board);
                 currentMask = masks.WhiteMasks;
                 reverseMask = masks.BlackMasks;
             } else
             {
-                currentKings = new Bitboard(blackPieces.board & kings.board);
-                currentPieces = new Bitboard(blackPieces.board);
+                currentKings = new Bitboard(BlackPieces.board & Kings.board);
+                currentPieces = new Bitboard(BlackPieces.board);
                 currentMask = masks.BlackMasks;
                 reverseMask = masks.WhiteMasks;
             }
 
             List<moveData> moves = new List<moveData>(); 
 
-            getAllPieces();
+            GetAllPieces();
 
             for (int i = 0; i < 64; i++)
             {
@@ -168,12 +153,12 @@ namespace Checkers
                 {
                     int[] availables = currentMask[i];
 
-                    if (!allPieces.isSquareUsed(availables[0]) && availables[0] != -1)
+                    if (!AllPieces.isSquareUsed(availables[0]) && availables[0] != -1)
                     {
                         moves.Add(new moveData(i, availables[0]));
                     }
 
-                    if (!allPieces.isSquareUsed(availables[1]) && availables[1] != -1)
+                    if (!AllPieces.isSquareUsed(availables[1]) && availables[1] != -1)
                     {
                         moves.Add(new moveData(i, availables[1]));
                     }
@@ -182,12 +167,12 @@ namespace Checkers
                     {
                         availables = reverseMask[i];
 
-                        if (!allPieces.isSquareUsed(availables[0]) && availables[0] != -1)
+                        if (!AllPieces.isSquareUsed(availables[0]) && availables[0] != -1)
                         {
                             moves.Add(new moveData(i, availables[0]));
                         }
 
-                        if (!allPieces.isSquareUsed(availables[1]) && availables[1] != -1)
+                        if (!AllPieces.isSquareUsed(availables[1]) && availables[1] != -1)
                         {
                             moves.Add(new moveData(i, availables[1]));
                         }
@@ -198,11 +183,16 @@ namespace Checkers
             return moves.ToArray();
         }
 
-        public Bitboard getAllPieces()
+        public Bitboard GetAllPieces()
         {
-            allPieces = new Bitboard(whitePieces.board | blackPieces.board);
+            AllPieces = new Bitboard(WhitePieces.board | BlackPieces.board);
 
-            return allPieces;
+            return AllPieces;
+        }
+
+        public void ToggleTurn()
+        {
+            WhiteTurn = !WhiteTurn;
         }
     }
 }

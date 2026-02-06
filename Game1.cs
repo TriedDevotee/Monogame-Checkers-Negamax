@@ -12,6 +12,7 @@ using System.Runtime.Serialization;
 using System.Linq;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+
 //using System.Drawing;
 
 
@@ -124,7 +125,6 @@ public class Particle
     public float life;
     float maxLife;
     float angle;
-    Color usageColor;
     float opacity;
     float speed;
     float size;
@@ -157,14 +157,8 @@ public class Particle
 
         particleTexture = texture;
 
-        usageColor = new Color((MathF.Cos(angle) + 1f) * 0.5f, (MathF.Cos(angle + 2.094f) + 1f) * 0.5f, (MathF.Cos(angle + 4.188f) + 1f) * 0.5f);
-
         size = startSize;
         opacity = startOpacity;
-
-
-
-        usageColor = new Color(255, 0, 255);
     }
 
     public void updateParticle(float dt)
@@ -186,7 +180,8 @@ public class Particle
             life = 0;
         }
 
-        size += 0.02f;
+        size += 0.03f;
+
     }
 
     public bool isOOB()
@@ -203,7 +198,10 @@ public class Particle
 
         //alpha = 1.0f;
 
-        Color color = new Color((MathF.Cos(angle) + 1f) * 0.5f, (MathF.Cos(angle + 2.094f) + 1f) * 0.5f, (MathF.Cos(angle + 4.188f) + 1f) * 0.5f) * alpha ;
+        Color color;
+        float layer = 0.8f;
+        
+        //color = new Color((MathF.Cos(angle) + 1f) * 0.5f, (MathF.Cos(angle + 2.094f) + 1f) * 0.5f, (MathF.Cos(angle + 4.188f) + 1f) * 0.5f) * alpha ;
 
         color = new Color((MathF.Cos(life) + 1f) * 0.5f, (MathF.Cos(life + 2.094f) + 1f) * 0.5f, (MathF.Cos(life + 4.188f) + 1f) * 0.5f) * alpha ;
 
@@ -218,7 +216,7 @@ public class Particle
             new Vector2(texture.Width / 2f, texture.Height / 2f),  
             size, 
             SpriteEffects.None, 
-            0.0f
+            layer
         );
 
     }
@@ -245,6 +243,9 @@ public class Background
 
         screenWidth = width;
         screenHeight = height;
+        
+
+        frameZeroSetup();
     }
 
     public void AddParticles()
@@ -268,6 +269,15 @@ public class Background
         particles.Add(newParticle);
 
         centrePoint += transformer;
+    }
+
+    public void frameZeroSetup()
+    {
+        for (int i = 0; i < 2000; i++)
+        {
+            AddParticles();
+            updateParticles(1f / 60f);
+        }   
     }
 
     public void updateParticles(float dt)
@@ -383,33 +393,130 @@ public class Board
         }
     }
 
-    
+    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, moveCache playedMove, Main main, Position currentPosition)
+    {
+        //Backdrop
 
+        Rectangle boardBack = new Rectangle((int) position.X - 5, (int) position.Y - 5, width + 10, height + 10);
+
+        batch.Draw(baseTexture, boardBack, Color.SlateGray);
+
+
+        Color selectedColor = Color.Blue;
+        Color clickedColor = Color.Red;
+        Color moveStart = Color.Lime;
+        Color moveEnd = Color.Purple;
+
+        int moveStartIndex = playedMove.start;
+        int moveEndIndex = playedMove.moveTo;
+
+        main.displayPosition(currentPosition);
+
+        Piece[][] pieces = main.displayBoard;
+
+        for (int i = 0; i < heightNum; i++)
+        {
+            for (int j = 0; j < widthNum; j++)
+            {
+                Shape currentShape = boardStore[i][j];
+
+                if (currentShape.isSelected)
+                {
+                    if (currentShape.isClicked)
+                    {
+                        batch.Draw(currentShape.texture, currentShape.shapeObj, clickedColor);
+                    } else 
+                    {
+                        batch.Draw(currentShape.texture, currentShape.shapeObj, selectedColor);
+                    }
+                } else
+                {
+                    batch.Draw(currentShape.texture, currentShape.shapeObj, currentShape.currentColor);
+                }
+
+                if (currentShape.index == moveStartIndex && moveStartIndex >= 0)
+                {
+                    batch.Draw(currentShape.texture, currentShape.shapeObj, moveStart);
+                }
+
+                if (currentShape.index == moveEndIndex && moveEndIndex >= 0)
+                {
+                    batch.Draw(currentShape.texture, currentShape.shapeObj, moveEnd);
+                }
+
+                drawPieces(i, j, pieces[i][j], batch, baseTexture);
+
+
+            }
+        }
+    }
+
+    public void drawPieces(int squareY, int squareX, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
+    {
+
+        Rectangle pieceDims = boardStore[squareY][squareX].shapeObj;
+
+        pieceDims.X += 5;
+        pieceDims.Y += 5;
+        pieceDims.Height -= 10;
+        pieceDims.Width -= 10;
+
+        Color usingColor;
+
+        if (currentPiece.isFull){
+
+            if (currentPiece.isWhite)
+            {
+                usingColor = Color.HotPink;
+
+                if (currentPiece.isKing)
+                {
+                    usingColor = Color.Yellow;
+                }
+                
+            } else
+            {
+                usingColor = Color.Indigo;
+
+                if (currentPiece.isKing)
+                {
+                    usingColor = Color.Orange;
+                }
+            }
+
+            batch.Draw(baseTexture, pieceDims, usingColor);
+        }
+    }
 
 }
 
 public class Game1 : Game
 {
+
+    //BUILT IN ATTRIBUTES
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    public Texture2D _texture;
-    public Board newBoard;
-    public MouseState mouse;
-    public SpriteFont testFont;
-    public bool validClickChecker;
-    public int squareDispley;
-    public moveCache testCache;
-    public Main main;
-    public GameState state;
-    public Position currentPosition;
-    public Texture2D Maduro;
-    public int indexOfCurrentPosition;
+    
+    //BASE TEXTURE
+    Texture2D _texture;
 
-    public int frameTimerForButtonPushing;
+    //GAME CLASSES
+    Board newBoard;
+    Main main;
+    Background back;
 
-    public Background back;
+    //INPUT HANDLING
+    MouseState mouse;
+    moveCache playedMove;
+    bool validClickChecker;
+    int frameTimerForButtonPushing;
 
+    //GAME STATE
+    GameState state;
 
+    //ELSE
+    Position currentPosition;
+    int indexOfCurrentPosition;
     float width;
     float height;
 
@@ -418,7 +525,6 @@ public class Game1 : Game
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
-
     }
 
     protected override void Initialize()
@@ -432,14 +538,13 @@ public class Game1 : Game
 
         base.Initialize();
 
-        squareDispley = -1;
-        testCache = new moveCache(-1, -1);
+        playedMove = new moveCache(-1, -1);
         validClickChecker = true;
     
         main = new Main();
         state = GameState.MoveInput;
 
-        main.previousPositions.Add(new Position(main.moves.whitePieces.board, main.moves.blackPieces.board, main.moves.kings.board));
+        main.previousPositions.Add(new Position(main.moves.WhitePieces.board, main.moves.BlackPieces.board, main.moves.Kings.board));
         indexOfCurrentPosition ++;
         currentPosition = main.previousPositions.Last();
 
@@ -448,17 +553,12 @@ public class Game1 : Game
         width = _graphics.PreferredBackBufferWidth;
         height = _graphics.PreferredBackBufferHeight;
 
-        back = new Background(3.0f * width / 4.0f, height / 2.0f, _texture, width, height);
+        back = new Background(newBoard.position.X + newBoard.width / 2.0f, newBoard.position.Y + newBoard.height / 2.0f, _texture, width, height);
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        testFont = Content.Load<SpriteFont> ("Monocraft");
-
-
-        Maduro = Content.Load<Texture2D>("download (1)");
 
         Viewport viewport = _graphics.GraphicsDevice.Viewport;
     }
@@ -514,25 +614,25 @@ public class Game1 : Game
 
         if (state != GameState.GameOver && state != GameState.BrowsingPastPositions){
 
-            if (main.moves.whiteTurn)
+            if (main.moves.WhiteTurn)
             {
-                if (testCache.start != -1 && testCache.moveTo != -1)
+                if (playedMove.start != -1 && playedMove.moveTo != -1)
                 {
                     state = GameState.MoveInput;
-                    main.makeHumanMove(testCache);
+                    main.makeHumanMove(playedMove);
 
-                    main.previousPositions.Add(new Position(main.moves.whitePieces.board, main.moves.blackPieces.board, main.moves.kings.board));
+                    main.previousPositions.Add(new Position(main.moves.WhitePieces.board, main.moves.BlackPieces.board, main.moves.Kings.board));
                     indexOfCurrentPosition ++;
                     currentPosition = main.previousPositions.Last();
 
-                    testCache.moveTo = -1;
+                    playedMove.moveTo = -1;
                 }
             } else
             {
                 state = GameState.BotMoving;
                 main.runForAI(main.moves);
 
-                main.previousPositions.Add(new Position(main.moves.whitePieces.board, main.moves.blackPieces.board, main.moves.kings.board));
+                main.previousPositions.Add(new Position(main.moves.WhitePieces.board, main.moves.BlackPieces.board, main.moves.Kings.board));
                 indexOfCurrentPosition ++;
                 currentPosition = main.previousPositions.Last();
             }
@@ -556,92 +656,24 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.White);
+        GraphicsDevice.Clear(Color.Black);
 
         _spriteBatch.Begin();
 
+
         back.drawParticles(_spriteBatch, _texture);
 
-        string output = Convert.ToString(testCache.start);
-        string output2 = Convert.ToString(testCache.moveTo);
-
-        Vector2 fontOrigin = testFont.MeasureString(output) / 2;
-        Vector2 fontPos = new Vector2(600, 100);
-
-        //_spriteBatch.DrawString(testFont, output, fontPos, Color.Black, 0, fontOrigin, 5.0f, SpriteEffects.None, 0.5f);
-
-        fontOrigin = testFont.MeasureString(output2) / 2;
-        fontPos = new Vector2(600, 300);
-
-        //_spriteBatch.DrawString(testFont, output2, fontPos, Color.Black, 0, fontOrigin, 5.0f, SpriteEffects.None, 0.5f);
-
-
-        _spriteBatch.Draw(Maduro, new Vector2(3.0f * width / 4.0f, height / 2.0f), null, Color.White, back.angle / 5.0f, new Vector2(97.0f, 159.5f), new Vector2(1.0f, 1.0f), SpriteEffects.None, 0f);
-
-        DrawBoard();
+        newBoard.DrawBoard(
+            batch: _spriteBatch, 
+            baseTexture: _texture, 
+            playedMove: playedMove, 
+            main: main, 
+            currentPosition: currentPosition);
 
 
         _spriteBatch.End();
 
         base.Draw(gameTime);
-    }
-
-    public void DrawBoard()
-    {
-        //Backdrop
-
-        Rectangle boardBack = new Rectangle((int) newBoard.position.X - 5, (int) newBoard.position.Y - 5, newBoard.width + 10, newBoard.height + 10);
-
-        _spriteBatch.Draw(_texture, boardBack, Color.SlateGray);
-
-
-        Color selectedColor = Color.Blue;
-        Color clickedColor = Color.Red;
-        Color moveStart = Color.Lime;
-        Color moveEnd = Color.Purple;
-
-        int moveStartIndex = testCache.start;
-        int moveEndIndex = testCache.moveTo;
-
-        main.displayPosition(currentPosition);
-
-        Piece[][] pieces = main.displayBoard;
-
-        for (int i = 0; i < newBoard.heightNum; i++)
-        {
-            for (int j = 0; j < newBoard.widthNum; j++)
-            {
-                Shape currentShape = newBoard.boardStore[i][j];
-
-                if (currentShape.isSelected)
-                {
-                    if (currentShape.isClicked)
-                    {
-                        _spriteBatch.Draw(currentShape.texture, currentShape.shapeObj, clickedColor);
-                    } else 
-                    {
-                        _spriteBatch.Draw(currentShape.texture, currentShape.shapeObj, selectedColor);
-                    }
-                } else
-                {
-                    _spriteBatch.Draw(currentShape.texture, currentShape.shapeObj, currentShape.currentColor);
-                }
-
-                if (currentShape.index == moveStartIndex && moveStartIndex >= 0)
-                {
-                    _spriteBatch.Draw(currentShape.texture, currentShape.shapeObj, moveStart);
-                }
-
-                if (currentShape.index == moveEndIndex && moveEndIndex >= 0)
-                {
-                    _spriteBatch.Draw(currentShape.texture, currentShape.shapeObj, moveEnd);
-                }
-
-                drawPieces(i, j, pieces[i][j]);
-
-
-            }
-        }
     }
 
     public void FindSelectedSquare()
@@ -664,7 +696,7 @@ public class Game1 : Game
 
                         newBoard.boardStore[i][j].isClicked = true;
 
-                        testCache.setValue(newBoard.boardStore[i][j].index);
+                        playedMove.setValue(newBoard.boardStore[i][j].index);
                     } else
                     {
                         newBoard.boardStore[i][j].isClicked = false;
@@ -675,43 +707,6 @@ public class Game1 : Game
                     newBoard.boardStore[i][j].isSelected = false;
                 }
             }
-        }
-    }
-
-    public void drawPieces(int squareY, int squareX, Piece currentPiece)
-    {
-
-        Rectangle pieceDims = newBoard.boardStore[squareY][squareX].shapeObj;
-
-        pieceDims.X += 5;
-        pieceDims.Y += 5;
-        pieceDims.Height -= 10;
-        pieceDims.Width -= 10;
-
-        Color usingColor;
-
-        if (currentPiece.isFull){
-
-            if (currentPiece.isWhite)
-            {
-                usingColor = Color.HotPink;
-
-                if (currentPiece.isKing)
-                {
-                    usingColor = Color.Yellow;
-                }
-                
-            } else
-            {
-                usingColor = Color.Indigo;
-
-                if (currentPiece.isKing)
-                {
-                    usingColor = Color.Orange;
-                }
-            }
-
-            _spriteBatch.Draw(_texture, pieceDims, usingColor);
         }
     }
 }

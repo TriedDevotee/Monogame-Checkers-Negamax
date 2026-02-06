@@ -1,27 +1,19 @@
 using System;
+using System.Numerics;
 
 namespace Checkers
 {
-
-    /* 
-        RIGHT - now this is the hard part:
-
-        The algorithm is as follows:
-            - Check for a win/loss, return the score back up the tree
-            - Ensure the depth > 0
-            - Calculate all the possible moves for the position
-            - Update the position
-            - Update the score for that position
-            - Run the position back through the function
-            - 
-        *Spoiler alert - this was not the hard part.
-        I never want to write chaining again :(
-
-    */
-    public class NegamaxHandler
+    /// <summary>
+    /// Class that handles the AI decision-making. Contains the recursive Negamax Algorithm, and quick helper functions
+    /// </summary>
+    class NegamaxHandler
     {
-        bool whiteTurn;
-        moveData bestMove;
+        private readonly bool whiteTurn;
+        public moveData BestMove {get; private set;}
+
+        private const int depthLimit = 7;
+        private const int losingScore = 1000000000;
+        private const float mobilityWeighting = 0.1f; 
 
         public NegamaxHandler(Bitboard whitePieces, Bitboard blackPieces, Bitboard kings, bool turn)
         {
@@ -33,28 +25,30 @@ namespace Checkers
 
             whiteTurn = turn;
 
-            bestMove = GetBestMove(gamePos, whiteTurn);
+            BestMove = GetBestMove(gamePos, whiteTurn);
         }
 
-        public moveData getMove()
+        /// <summary>
+        /// Counts the number of pieces, or bits which are 1 in the 64 bit integer "board" and returns that value. 
+        /// Uses System.Numerics.BitOperations.PopCount() for a more efficient runtime due to high volume of function calls in the recursive phase.
+        /// </summary>
+        /// <param name="board"></param>
+        /// <returns></returns>
+
+        private int countPieces(ulong board)
         {
-            return bestMove;
+            return BitOperations.PopCount(board);
         }
 
-        public int countPieces(ulong board)
-        {
-            string boardString = Convert.ToString((long) board, 2);
-            int count = 0;
-
-            for (int i = 0; i < boardString.Length; i++)
-            {
-                if (boardString[i] == '1') count++;
-            }
-
-            return count;
-        }
-
-        public int evaluation(Position board, bool whiteTurn)
+        /// <summary>
+        /// Basic evaluation function. Counts pieces, kings and available positions from the current position. 
+        /// Most likely the limiting factor in the bots performance, with very simplistic heuristics in play.
+        /// Evaluation = 2 x delta pieces + delta kings + (available positions x 0.1)
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="whiteTurn"></param>
+        /// <returns></returns>
+        private float evaluation(Position board, bool whiteTurn)
         {
             int whitePieces = countPieces(board.whitePieces.board);
             int blackPieces = countPieces(board.blackPieces.board);
@@ -62,70 +56,52 @@ namespace Checkers
             int whiteKings = countPieces(board.kings.board & board.whitePieces.board);
             int blackKings = countPieces(board.kings.board & board.blackPieces.board);
 
-            int eval = 2 * (whitePieces - blackPieces) + (whiteKings - blackKings);
+            float eval = 2 * (whitePieces - blackPieces) + (whiteKings - blackKings);
+
+            Moves positions = new(whiteTurn);
+
+            positions.SetUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
+
+            eval += positions.GetAllMoves().Length * mobilityWeighting;
 
             return whiteTurn? eval : -eval; 
-
         }
 
-        public int Negamax(int depth, Position board, bool whiteTurn, int alpha, int beta)
+        /// <summary>
+        /// Recursive component of the Negamax Algorithm. Called from GetBestMove()
+        /// </summary>
+        /// <param name="depth"></param>
+        /// <param name="board"></param>
+        /// <param name="whiteTurn"></param>
+        /// <param name="alpha"></param>
+        /// <param name="beta"></param>
+        /// <returns></returns>
+
+        private float Negamax(int depth, Position board, bool whiteTurn, float alpha, float beta)
         {
             if (depth == 0) return evaluation(board, whiteTurn);
-            if (board.isGameOver()) return -100000000;
+            if (board.isGameOver()) return whiteTurn? losingScore : -losingScore;
 
             Moves moves = new Moves(whiteTurn);
-            moves.setUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
+            moves.SetUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
 
-            moveData[] possibleMoves = moves.getAllMoves();
+            moveData[] possibleMoves = moves.GetAllMoves();
 
             if (possibleMoves.Length == 0) return 0;
 
-            int bestScore = int.MinValue;
+            float bestScore = float.NegativeInfinity;
 
             foreach (moveData move in possibleMoves)
             {
             
                 Position newPos = new Position(board.whitePieces.board, board.blackPieces.board, board.kings.board);
 
-                if (whiteTurn)
-                {
-                    bool settingKing = newPos.kings.isSquareUsed(move.start) && newPos.whitePieces.isSquareUsed(move.start);
-                    bool becomesKing = move.moveTo / 8 == 0 || move.moveTo / 8 == 7;
+                newPos.makePositionalMove(move, whiteTurn);
 
-                    newPos.whitePieces.setSquare(move.moveTo);
-                    newPos.whitePieces.clearSquare(move.start);
-                    if (move.captureSquare != -1)
-                    {
-                        newPos.blackPieces.clearSquare(move.captureSquare);
-                    }
-                    if (settingKing || becomesKing)
-                    {
-                        newPos.kings.clearSquare(move.start);
-                        newPos.kings.setSquare(move.moveTo);
-                    }
-                } else
-                {
-                    bool settingKing = newPos.kings.isSquareUsed(move.start) && newPos.blackPieces.isSquareUsed(move.start);
-                    bool becomesKing = move.moveTo / 8 == 0 || move.moveTo / 8 == 7;
+                Moves chainChecker = new (whiteTurn);
+                chainChecker.SetUpPosition(newPos.whitePieces.board, newPos.blackPieces.board, newPos.kings.board);
 
-                    newPos.blackPieces.setSquare(move.moveTo);
-                    newPos.blackPieces.clearSquare(move.start);
-
-                    if (move.captureSquare != -1)
-                    {
-                        newPos.whitePieces.clearSquare(move.captureSquare);
-                    }
-                    if (settingKing || becomesKing)
-                    {
-                        newPos.kings.clearSquare(move.start);
-                        newPos.kings.setSquare(move.moveTo);
-                    }
-                }
-
-                Moves chainChecker = new Moves();
-                chainChecker.setUpPosition(newPos.whitePieces.board, newPos.blackPieces.board, newPos.kings.board);
-
-                int score = -Negamax(depth - 1, newPos, !whiteTurn, -alpha, -beta);
+                float score = -Negamax(depth - 1, newPos, !whiteTurn, -alpha, -beta);
 
                 if (score > bestScore)
                 {
@@ -147,64 +123,36 @@ namespace Checkers
             return bestScore;
         } 
 
-        public moveData GetBestMove(Position board, bool whiteTurn)
+        /// <summary>
+        /// Best Move generator. Called from constructor. 
+        /// Takes in the current position and the bots turn, and outputs a move. 
+        /// Applies Alpha-Beta pruning.
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="whiteTurn"></param>
+        /// <returns></returns>
+        private moveData GetBestMove(Position board, bool whiteTurn)
         {
 
-            int maxDepth = 9;
+            Moves moves = new(whiteTurn);
 
-            Moves moves = new Moves(whiteTurn);
+            moves.SetUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
 
-            moves.whiteTurn = whiteTurn;
+            moveData[] possibleMoves = moves.GetAllMoves();
 
-            //Console.WriteLine($"AI MOVE GENERATION FOR: {(moves.whiteTurn ? "WHITE" : "BLACK")}");
+            float bestScore = int.MinValue;
 
-            moves.setUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
-
-            moveData[] possibleMoves = moves.getAllMoves();
-
-            int bestScore = int.MinValue;
-
-            moveData bestMove = new moveData();
+            moveData bestMove = new();
 
 
             foreach (moveData move in possibleMoves)
             {
             
-                Position newPos = new Position(board.whitePieces.board, board.blackPieces.board, board.kings.board);
+                Position newPos = new(board.whitePieces.board, board.blackPieces.board, board.kings.board);
 
-                if (whiteTurn){
-                    bool settingKing = newPos.kings.isSquareUsed(move.start) && newPos.whitePieces.isSquareUsed(move.start);
+                newPos.makePositionalMove(move, whiteTurn);
 
-                    newPos.whitePieces.setSquare(move.moveTo);
-                    newPos.whitePieces.clearSquare(move.start);
-                    if (move.captureSquare != -1)
-                    {
-                        newPos.blackPieces.clearSquare(move.captureSquare);
-                    }
-                    if (settingKing)
-                    {
-                        newPos.kings.clearSquare(move.start);
-                        newPos.kings.setSquare(move.moveTo);
-                    }
-                } else
-                {
-                    bool settingKing = newPos.kings.isSquareUsed(move.start) && newPos.blackPieces.isSquareUsed(move.start); 
-
-                    newPos.blackPieces.setSquare(move.moveTo);
-                    newPos.blackPieces.clearSquare(move.start);
-
-                    if (move.captureSquare != -1)
-                    {
-                        newPos.whitePieces.clearSquare(move.captureSquare);
-                    }
-                    if (settingKing)
-                    {
-                        newPos.kings.clearSquare(move.start);
-                        newPos.kings.setSquare(move.moveTo);
-                    }
-                }
-
-                int score = -Negamax(depth: maxDepth, newPos, !whiteTurn, int.MinValue + 1, int.MaxValue);
+                float score = -Negamax(depth: depthLimit, newPos, !whiteTurn, int.MinValue + 1.0f, int.MaxValue);
 
                 if (score > bestScore)
                 {

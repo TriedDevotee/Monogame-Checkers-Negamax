@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design.Serialization;
 using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Comp_Sci_NEA;
@@ -23,9 +18,9 @@ namespace Checkers
 
         public Main()
         {
-            moves = new Moves();
+            moves = new Moves(true);
             wasLastMoveValid = true;
-            previousPositions = [new Position(moves.whitePieces.board, moves.blackPieces.board, moves.kings.board)];
+            previousPositions = [new Position(moves.WhitePieces.board, moves.BlackPieces.board, moves.Kings.board)];
 
             displayBoard = new Piece[8][];
 
@@ -126,7 +121,7 @@ namespace Checkers
 
         public void makeHumanMove(moveCache inputMove)
         {
-            moveData[] allPossibleMoves = moves.getAllMoves();
+            moveData[] allPossibleMoves = moves.GetAllMoves();
             int foundAtIndex = searchInMoves(new moveData(inputMove.start, inputMove.moveTo), allPossibleMoves);
             
             if (foundAtIndex != -1)
@@ -137,15 +132,15 @@ namespace Checkers
                     waitingForBranchInput = false;
 
                     bitboardWrapper wrapper;
-                    if (moves.whiteTurn){
-                        wrapper = moveMaker(moves.whitePieces, moves.blackPieces, moves.kings, actualMove, moves.whiteTurn);
+                    if (moves.WhiteTurn){
+                        wrapper = moveMaker(moves.WhitePieces, moves.BlackPieces, moves.Kings, actualMove, moves.WhiteTurn);
                     } else {
-                        wrapper = moveMaker(moves.blackPieces, moves.whitePieces, moves.kings, actualMove, moves.whiteTurn);
+                        wrapper = moveMaker(moves.BlackPieces, moves.WhitePieces, moves.Kings, actualMove, moves.WhiteTurn);
                     }
 
-                    moves.setUpPosition(wrapper.white.board, wrapper.black.board, wrapper.kings.board);
+                    moves.SetUpPosition(wrapper.white.board, wrapper.black.board, wrapper.kings.board);
 
-                    moves.whiteTurn = !moves.whiteTurn;
+                    moves.ToggleTurn();
 
                     return;
                 }
@@ -153,34 +148,25 @@ namespace Checkers
                 if (actualMove.captureSquare != -1)
                 {
 
-                    Position currentPosition = new Position(moves.whitePieces.board, moves.blackPieces.board, moves.kings.board);
+                    Position currentPosition = new Position(moves.WhitePieces.board, moves.BlackPieces.board, moves.Kings.board);
 
                     ChainedCaptures(currentPosition, actualMove);
 
-                    moves.overallScore += moves.whiteTurn ? 1 : -1;
-
-                    if (!waitingForBranchInput) moves.whiteTurn = !moves.whiteTurn;
+                    if (!waitingForBranchInput) moves.ToggleTurn();
 
                     return;
 
-                }
-                
-            } else {
-                //Console.WriteLine($"Length of moves: {allPossibleMoves.Length}");
-                for (int i = 0; i < allPossibleMoves.Length; i++)
-                {
-                    //Console.WriteLine($"Possible move {i} -> {allPossibleMoves[i].start}, {allPossibleMoves[i].moveTo}");
                 }
             }
         }
 
         public void ChainedCaptures(Position currentPosition, moveData actualMove)
         {
-            ChainTree chains = new ChainTree(currentPosition, moves.whiteTurn);
+            ChainTree chains = new ChainTree(currentPosition, moves.WhiteTurn);
 
             ChainNode node = new ChainNode();
 
-            foreach (ChainNode root in chains.captureTree)
+            foreach (ChainNode root in chains.CaptureTree)
             {
                 if (root.move.start == actualMove.start &&
                     root.move.moveTo == actualMove.moveTo)
@@ -201,18 +187,18 @@ namespace Checkers
 
                 bitboardWrapper wrapper;
 
-                if (moves.whiteTurn){
-                    wrapper = moveMaker(moves.whitePieces, moves.blackPieces, moves.kings, chosenPath[i], moves.whiteTurn);
+                if (moves.WhiteTurn){
+                    wrapper = moveMaker(moves.WhitePieces, moves.BlackPieces, moves.Kings, chosenPath[i], moves.WhiteTurn);
                 } else {
-                    wrapper = moveMaker(moves.blackPieces, moves.whitePieces, moves.kings, chosenPath[i], moves.whiteTurn);
+                    wrapper = moveMaker(moves.BlackPieces, moves.WhitePieces, moves.Kings, chosenPath[i], moves.WhiteTurn);
                 }
 
-                moves.setUpPosition(wrapper.white.board, wrapper.black.board, wrapper.kings.board);
+                moves.SetUpPosition(wrapper.white.board, wrapper.black.board, wrapper.kings.board);
             }
 
         }
 
-        public List<moveData> buildPathingTree(List<List<ChainNode>> Paths, bool isBot = false, int depthRemaining = 0, bool whiteTurn = true, NegamaxHandler Ai = null)
+        public List<moveData> buildPathingTree(List<List<ChainNode>> Paths, bool isBot = false, int depthRemaining = 0, bool whiteTurn = true)
         {
             //Console.WriteLine($"Pathing function called.");
 
@@ -237,8 +223,6 @@ namespace Checkers
                         if (Deviants.IndexOf(Paths[i][generation].move) == -1)
                         {
                             Deviants.Add(Paths[i][generation].move);
-
-                            //Console.WriteLine($"Found a deviant! {Paths[i][generation].move.start} to {Paths[i][generation].move.moveTo}, generation = {generation}");
                         }
                     }
 
@@ -263,37 +247,37 @@ namespace Checkers
         }
         public void runForAI(Moves moves)
         {
-            NegamaxHandler negamax = new NegamaxHandler(moves.whitePieces, moves.blackPieces, moves.kings, moves.whiteTurn);
+            NegamaxHandler negamax = new NegamaxHandler(moves.WhitePieces, moves.BlackPieces, moves.Kings, moves.WhiteTurn);
 
-            moveData bestMove = negamax.getMove();
+            moveData bestMove = negamax.BestMove;
 
             bitboardWrapper wrapper;
 
 
             if (bestMove.captureSquare != -1)
             {
-                Position currentPosition = new Position(moves.whitePieces.board, moves.blackPieces.board, moves.kings.board);
+                Position currentPosition = new Position(moves.WhitePieces.board, moves.BlackPieces.board, moves.Kings.board);
 
                 ChainedCaptures(currentPosition, bestMove);
 
                 if (!waitingForBranchInput)
-                    moves.whiteTurn = !moves.whiteTurn;
+                    moves.ToggleTurn();
 
                 return;
 
             }
 
-            if (moves.whiteTurn)
+            if (moves.WhiteTurn)
             {
-                wrapper = moveMaker(moves.whitePieces, moves.blackPieces, moves.kings, bestMove, moves.whiteTurn);
+                wrapper = moveMaker(moves.WhitePieces, moves.BlackPieces, moves.Kings, bestMove, moves.WhiteTurn);
             } else
             {
-                wrapper = moveMaker(moves.blackPieces, moves.whitePieces, moves.kings, bestMove, moves.whiteTurn);
+                wrapper = moveMaker(moves.BlackPieces, moves.WhitePieces, moves.Kings, bestMove, moves.WhiteTurn);
             }
 
-            moves.setUpPosition(wrapper.white.board, wrapper.black.board, wrapper.kings.board);
+            moves.SetUpPosition(wrapper.white.board, wrapper.black.board, wrapper.kings.board);
 
-            moves.whiteTurn = !moves.whiteTurn;
+            moves.ToggleTurn();
         }
 
         static List<List<ChainNode>> chainTraverser(ChainNode startPoint)
@@ -349,21 +333,20 @@ namespace Checkers
 
             static int countPieces(ulong board)
             {
-                string boardString = Convert.ToString((long) board, 2);
-                int count = 0;
+                int numPieces = 0;
 
-                for (int i = 0; i < boardString.Length; i++)
+                for (int i = 0; i < 64; i++)
                 {
-                    if (boardString[i] == '1') count++;
+                    if ((board & ((ulong) 1 << i)) != 0) numPieces++;
                 }
 
-                return count;
+                return numPieces;
             }
 
-            moveData[] availableMoves = moves.getAllMoves();
+            moveData[] availableMoves = moves.GetAllMoves();
 
-            int whitePieces = countPieces(moves.whitePieces.board);
-            int blackPieces = countPieces(moves.blackPieces.board);
+            int whitePieces = countPieces(moves.WhitePieces.board);
+            int blackPieces = countPieces(moves.BlackPieces.board);
 
             if (whitePieces == 0)
             {
