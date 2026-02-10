@@ -19,5 +19,13 @@ public struct MenuItem
 
 class Menu
 {
-    
+    public void UpdateMenu()
+    {
+        
+    }
+
+    public void DrawMenu()
+    {
+        
+    }
 }
