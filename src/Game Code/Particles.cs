@@ -169,7 +169,7 @@ public class Background
 
         particles.RemoveAll(p => p.life == 0.0f);
 
-        updateTransformer();
+        UpdateTransformer();
     }
 
     public void drawParticles(SpriteBatch sprite, Texture2D texture)
@@ -180,7 +180,7 @@ public class Background
         }
     }
 
-    public void updateTransformer()
+    public void UpdateTransformer()
     {
         if (centrePoint.X > screenWidth || centrePoint.X < 0.0f) transformer.X *= -1;
         if (centrePoint.Y > screenHeight || centrePoint.Y < 0.0f) transformer.Y *= -1;

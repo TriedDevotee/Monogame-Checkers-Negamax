@@ -38,11 +38,11 @@ public class Board
         height = height2;
         width = width2;
 
-        populateCheckersBoard();
+        PopulateCheckersBoard();
 
     }
 
-    public void populateCheckersBoard()
+    private void PopulateCheckersBoard()
     {
         bool whiteColor = false;
         for (int i = 0; i < heightNum; i++)
@@ -66,10 +66,8 @@ public class Board
         }
     }
 
-    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, moveCache playedMove, Main main, Position currentPosition)
+    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, Session session)
     {
-        //Backdrop
-
         Rectangle boardBack = new Rectangle((int) position.X - 5, (int) position.Y - 5, width + 10, height + 10);
 
         batch.Draw(baseTexture, boardBack, Color.SlateGray);
@@ -78,14 +76,14 @@ public class Board
         Color selectedColor = Color.Blue;
         Color clickedColor = Color.Red;
         Color moveStart = Color.Lime;
-        Color moveEnd = Color.Purple;
+        Color moveEnd = Color.BlueViolet;
 
-        int moveStartIndex = playedMove.start;
-        int moveEndIndex = playedMove.moveTo;
+        int moveStartIndex = session.PlayedMove.start;
+        int moveEndIndex = session.PlayedMove.moveTo;
 
-        main.displayPosition(currentPosition);
+        session.Game.displayPosition(session.CurrentPosition);
 
-        Piece[][] pieces = main.displayBoard;
+        Piece[][] pieces = session.Game.displayBoard;
 
         for (int i = 0; i < heightNum; i++)
         {
@@ -117,14 +115,14 @@ public class Board
                     batch.Draw(currentShape.texture, currentShape.shapeObj, moveEnd);
                 }
 
-                drawPieces(i, j, pieces[i][j], batch, baseTexture);
+                DrawPieces(i, j, pieces[i][j], batch, baseTexture);
 
 
             }
         }
     }
 
-    public void drawPieces(int squareY, int squareX, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
+    private void DrawPieces(int squareY, int squareX, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
     {
 
         Rectangle pieceDims = boardStore[squareY][squareX].shapeObj;

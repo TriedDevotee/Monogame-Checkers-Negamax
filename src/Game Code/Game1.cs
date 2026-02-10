@@ -20,6 +20,7 @@ public enum GameState
 {
     InMenu,
     MoveInput,
+    MoveResolved,
     WaitingForBranchInput,
     BotMoving,
     GameOver,
@@ -55,6 +56,11 @@ public class Session
     public void UpdateMove(moveCache newMove)
     {
         PlayedMove = newMove;
+    }
+
+    public void AddToMove(int square)
+    {
+        PlayedMove.SetValue(square);
     }
 
     public void UpdatePosition(Position newPos)

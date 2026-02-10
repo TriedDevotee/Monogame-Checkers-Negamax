@@ -10,7 +10,7 @@ public struct userMove
     }
 }
 
-public struct moveCache
+public class moveCache
 {
     public int start;
     public int moveTo;

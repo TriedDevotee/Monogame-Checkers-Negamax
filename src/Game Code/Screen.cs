@@ -20,6 +20,7 @@ public class GameScreen : IScreen
     private Session session;
     private readonly Texture2D _texture;
     private MouseState mouseState;
+    private bool leftClicked;
     private MouseState previousMouseState;
 
     public GameScreen(Session currentSession, Texture2D texture)
@@ -28,14 +29,17 @@ public class GameScreen : IScreen
         _texture = texture;
 
         mouseState = new MouseState();
-        previousMouseState = new MouseState();
+        previousMouseState = Mouse.GetState();
+
+        session.SetState(GameState.MoveInput);
     }
 
     public void UpdateScreen(GameTime gameTime)
     {
         previousMouseState = mouseState;
         mouseState = Mouse.GetState();
-        FindSelectedSquare();
+
+        leftClicked = mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released;
 
         if (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released)
         {
@@ -47,28 +51,35 @@ public class GameScreen : IScreen
         session.Back.AddParticles();
         session.Back.updateParticles(dt);
 
-        session.Game.previousPositions.Add(
-            new Position(
-                session.Game.moves.WhitePieces.board, 
-                session.Game.moves.BlackPieces.board, 
-                session.Game.moves.Kings.board
-            )
-        );
-        
-        session.IndexOfCurrentPosition++;
-        session.UpdatePosition(session.Game.previousPositions.Last());
-
         if (session.Game.moves.WhiteTurn)
         {
-            session.Game.makeHumanMove(session.PlayedMove);
-            session.SetState(GameState.MoveInput);
-            session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
+            if (session.state == GameState.MoveInput)
+            {
+                if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
+                    session.Game.makeHumanMove(session.PlayedMove);
+
+                    session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
+
+                    if (!session.Game.waitingForBranchInput)
+                    {
+                        session.SetState(GameState.BotMoving);
+
+                        UpdatePositionLog();
+                    }
+                }
+            }
         }
         else
         {
-            session.Game.runForAI(session.Game.moves);
-            session.SetState(GameState.BotMoving);
+            if (session.state == GameState.BotMoving)
+            {
+                session.Game.runForAI(session.Game.moves);
+                session.SetState(GameState.MoveInput);
+                UpdatePositionLog();
+            }
         }
+
+        FindSelectedSquare();
 
         int isGameOver = session.Game.checkForGameOver();
         if (isGameOver == 1 || isGameOver == 2 || isGameOver == 3) session.SetState(GameState.GameOver);
@@ -81,45 +92,50 @@ public class GameScreen : IScreen
         session.Board.DrawBoard(
             batch: _spriteBatch, 
             baseTexture: _texture, 
-            playedMove: session.PlayedMove, 
-            main: session.Game, 
-            currentPosition: session.CurrentPosition
+            session: session
         );
     }
 
-    public void FindSelectedSquare()
+    private void FindSelectedSquare()
     {
         for (int i = 0; i < session.Board.heightNum; i++)
         {
             for (int j = 0; j < session.Board.widthNum; j++)
             {
                 ShapeBound bound = session.Board.shapeBounds[i][j];
-                if (mouseState.Position.X >= bound.startX 
+
+                bool isSelected = mouseState.Position.X >= bound.startX 
                     && mouseState.Position.X < bound.farX 
                     && mouseState.Position.Y >= bound.startY 
-                    && mouseState.Position.Y < bound.farY)
+                    && mouseState.Position.Y < bound.farY;
+
+                session.Board.boardStore[i][j].isSelected = isSelected;
+
+                if (leftClicked && isSelected)
                 {
-                    session.Board.boardStore[i][j].isSelected = true;
-
-                    if (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released)
-                    {
-                        session.ValidClickChecker = false;
-
-                        session.Board.boardStore[i][j].isClicked = true;
-
-                        session.PlayedMove.SetValue(session.Board.boardStore[i][j].index);
-                    } else
-                    {
-                        session.Board.boardStore[i][j].isClicked = false;
-                    }
-                } 
-                else
+                    session.Board.boardStore[i][j].isClicked = true;
+                    session.AddToMove(session.Board.boardStore[i][j].index);
+                } else
                 {
-                    session.Board.boardStore[i][j].isSelected = false;
+                    session.Board.boardStore[i][j].isClicked = false;
                 }
             }
         }
     }
+
+    private void UpdatePositionLog()
+    {
+       session.Game.previousPositions.Add(
+            new Position(
+                session.Game.moves.WhitePieces.board, 
+                session.Game.moves.BlackPieces.board, 
+                session.Game.moves.Kings.board
+            )
+        );
+        
+        session.IndexOfCurrentPosition++;
+        session.UpdatePosition(session.Game.previousPositions.Last()); 
+    }  
 }
 
 public class MenuScreen : IScreen
