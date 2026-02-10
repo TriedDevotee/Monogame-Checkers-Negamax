@@ -24,7 +24,7 @@ public struct moveCache
         indexFilling = 0;
     }
 
-    public void setValue(int square)
+    public void SetValue(int square)
     {
         if (start == square && start != -1)
         {

@@ -33,6 +33,7 @@ public class Session
     public Background Back {get;}
     public moveCache PlayedMove {get; private set;}
     public Position CurrentPosition {get; private set;}
+    public GameState state {get; private set;}
     public bool ValidClickChecker {get; set;}
     public int FrameTimerForButtonPushing {get; set;}
     public int IndexOfCurrentPosition {get; set;}
@@ -45,6 +46,7 @@ public class Session
         PlayedMove = newMove;
         CurrentPosition = newPos;
 
+        state = GameState.InMenu;
         ValidClickChecker = true;
         FrameTimerForButtonPushing = 0;
         IndexOfCurrentPosition = 0;
@@ -60,6 +62,11 @@ public class Session
         CurrentPosition = newPos;
         IndexOfCurrentPosition++;
     }
+
+    public void SetState(GameState newState)
+    {
+        state = newState;
+    }
 }
 
 public class Game1 : Game
@@ -67,8 +74,6 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _texture;
-    private MouseState mouse;
-    private GameState state;
 
     float width;
     float height;
@@ -98,10 +103,6 @@ public class Game1 : Game
         moveCache playedMove = new(-1, -1);
         Position initialMove = new();
 
-        mouse = new MouseState();
-
-        state = GameState.InMenu;
-
         session = new(newBoard, newGame, back, playedMove, initialMove);
 
         session.Game.previousPositions.Add(new Position(
@@ -113,7 +114,7 @@ public class Game1 : Game
         session.IndexOfCurrentPosition++;
         session.UpdatePosition(session.Game.previousPositions.Last());
 
-        currentScreen = new GameScreen(session, _texture, state);
+        currentScreen = new GameScreen(session, _texture);
 
         base.Initialize();
     }
@@ -130,17 +131,10 @@ public class Game1 : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        mouse = Mouse.GetState();
-
-        if (mouse.LeftButton == ButtonState.Released)
-        {
-            session.ValidClickChecker = true;
-        }
-
         if (Keyboard.GetState().IsKeyDown(Keys.Left) && session.IndexOfCurrentPosition > 1 && session.FrameTimerForButtonPushing == 0)
         {
 
-            state = GameState.BrowsingPastPositions;
+            session.SetState(GameState.BrowsingPastPositions);
 
             session.IndexOfCurrentPosition -= 1;
 
@@ -157,14 +151,11 @@ public class Game1 : Game
 
             if (session.IndexOfCurrentPosition == session.Game.previousPositions.Count - 1)
             {
-                state = GameState.MoveInput;
+                session.SetState(GameState.MoveInput);
             }
             
             session.FrameTimerForButtonPushing = 10;
         }
-
-        //Finds which squares are covered by mouse
-        FindSelectedSquare();
 
         if (session.FrameTimerForButtonPushing != 0) session.FrameTimerForButtonPushing--;
 
@@ -184,39 +175,5 @@ public class Game1 : Game
         _spriteBatch.End();
 
         base.Draw(gameTime);
-    }
-
-    public void FindSelectedSquare()
-    {
-        for (int i = 0; i < session.Board.heightNum; i++)
-        {
-            for (int j = 0; j < session.Board.widthNum; j++)
-            {
-                ShapeBound bound = session.Board.shapeBounds[i][j];
-                if (mouse.Position.X >= bound.startX 
-                    && mouse.Position.X < bound.farX 
-                    && mouse.Position.Y >= bound.startY 
-                    && mouse.Position.Y < bound.farY)
-                {
-                    session.Board.boardStore[i][j].isSelected = true;
-
-                    if (mouse.LeftButton == ButtonState.Pressed && session.ValidClickChecker)
-                    {
-                        session.ValidClickChecker = false;
-
-                        session.Board.boardStore[i][j].isClicked = true;
-
-                        session.PlayedMove.setValue(session.Board.boardStore[i][j].index);
-                    } else
-                    {
-                        session.Board.boardStore[i][j].isClicked = false;
-                    }
-                } 
-                else
-                {
-                    session.Board.boardStore[i][j].isSelected = false;
-                }
-            }
-        }
     }
 }
