@@ -36,10 +36,11 @@ public class Session
     public Position CurrentPosition {get; private set;}
     public GameState state {get; private set;}
     public bool ValidClickChecker {get; set;}
+    public bool IsPlayerWhite {get;}
     public int FrameTimerForButtonPushing {get; set;}
     public int IndexOfCurrentPosition {get; set;}
 
-    public Session(Board newBoard, Main newMain, Background newBack, moveCache newMove, Position newPos)
+    public Session(Board newBoard, Main newMain, Background newBack, moveCache newMove, Position newPos, bool Color)
     {
         Board = newBoard;
         Game = newMain;
@@ -51,6 +52,8 @@ public class Session
         ValidClickChecker = true;
         FrameTimerForButtonPushing = 0;
         IndexOfCurrentPosition = 0;
+
+        IsPlayerWhite = Color;
     }
 
     public void UpdateMove(moveCache newMove)
@@ -66,7 +69,6 @@ public class Session
     public void UpdatePosition(Position newPos)
     {
         CurrentPosition = newPos;
-        IndexOfCurrentPosition++;
     }
 
     public void SetState(GameState newState)
@@ -109,7 +111,7 @@ public class Game1 : Game
         moveCache playedMove = new(-1, -1);
         Position initialMove = new();
 
-        session = new(newBoard, newGame, back, playedMove, initialMove);
+        session = new(newBoard, newGame, back, playedMove, initialMove, true);
 
         session.Game.previousPositions.Add(new Position(
             session.Game.moves.WhitePieces.board, 
@@ -151,19 +153,24 @@ public class Game1 : Game
 
         if (Keyboard.GetState().IsKeyDown(Keys.Right) && session.IndexOfCurrentPosition != session.Game.previousPositions.Count - 1 && session.FrameTimerForButtonPushing == 0)
         {
+            session.SetState(GameState.BrowsingPastPositions);
+
             session.IndexOfCurrentPosition += 1;
 
             session.UpdatePosition(session.Game.previousPositions[session.IndexOfCurrentPosition]);
-
-            if (session.IndexOfCurrentPosition == session.Game.previousPositions.Count - 1)
-            {
-                session.SetState(GameState.MoveInput);
-            }
             
             session.FrameTimerForButtonPushing = 10;
         }
 
         if (session.FrameTimerForButtonPushing != 0) session.FrameTimerForButtonPushing--;
+
+        if (session.state == GameState.BrowsingPastPositions && 
+            session.IndexOfCurrentPosition == session.Game.previousPositions.Count() - 1)
+        {
+            session.SetState(GameState.MoveInput);
+        }
+
+        Console.WriteLine(session.state);
 
         currentScreen.UpdateScreen(gameTime);
 

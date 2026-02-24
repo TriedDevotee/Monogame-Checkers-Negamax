@@ -56,11 +56,13 @@ public class GameScreen : IScreen
             if (session.state == GameState.MoveInput)
             {
                 if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
-                    session.Game.makeHumanMove(session.PlayedMove);
+                    bool movePlayed = session.Game.MakeHumanMove(session.PlayedMove);
+
+                    if (movePlayed) session.SetState(GameState.MoveResolved);
 
                     session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
 
-                    if (!session.Game.waitingForBranchInput)
+                    if (session.state == GameState.MoveResolved && !session.Game.waitingForBranchInput)
                     {
                         session.SetState(GameState.BotMoving);
 
@@ -111,10 +113,17 @@ public class GameScreen : IScreen
 
                 session.Board.boardStore[i][j].isSelected = isSelected;
 
+                bool IsClickableSquare = session.Game.displayBoard[i][j].isFull && session.PlayedMove.start == -1 && session.IsPlayerWhite == session.Game.displayBoard[i][j].isWhite;
+
                 if (leftClicked && isSelected)
                 {
-                    session.Board.boardStore[i][j].isClicked = true;
-                    session.AddToMove(session.Board.boardStore[i][j].index);
+                    if (IsClickableSquare || session.PlayedMove.start != -1){
+                        session.Board.boardStore[i][j].isClicked = true;
+                        session.AddToMove(session.Board.boardStore[i][j].index);
+                    } else
+                    {
+                        session.UpdateMove(new());
+                    }
                 } else
                 {
                     session.Board.boardStore[i][j].isClicked = false;
@@ -133,8 +142,9 @@ public class GameScreen : IScreen
             )
         );
         
-        session.IndexOfCurrentPosition++;
         session.UpdatePosition(session.Game.previousPositions.Last()); 
+
+        session.IndexOfCurrentPosition++;
     }  
 }
 

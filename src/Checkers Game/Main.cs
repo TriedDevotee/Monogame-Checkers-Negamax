@@ -119,7 +119,7 @@ namespace Checkers
             }
         }
 
-        public void makeHumanMove(moveCache inputMove)
+        public bool MakeHumanMove(moveCache inputMove)
         {
             moveData[] allPossibleMoves = moves.GetAllMoves();
             int foundAtIndex = searchInMoves(new moveData(inputMove.start, inputMove.moveTo), allPossibleMoves);
@@ -142,10 +142,9 @@ namespace Checkers
 
                     moves.ToggleTurn();
 
-                    return;
+                    return true;
                 }
-
-                if (actualMove.captureSquare != -1)
+                else
                 {
 
                     Position currentPosition = new Position(moves.WhitePieces.board, moves.BlackPieces.board, moves.Kings.board);
@@ -154,9 +153,13 @@ namespace Checkers
 
                     if (!waitingForBranchInput) moves.ToggleTurn();
 
-                    return;
+                    return true;
 
                 }
+            } 
+            else
+            {
+                return false;
             }
         }
 
