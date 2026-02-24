@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Net.Mime;
 
 namespace Comp_Sci_NEA;
 
@@ -19,6 +20,11 @@ public struct MenuItem
 
 class Menu
 {
+
+    public Menu()
+    {
+
+    }
     public void UpdateMenu()
     {
         

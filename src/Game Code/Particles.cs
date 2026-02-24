@@ -1,8 +1,10 @@
+using Comp_Sci_NEA;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-public class Particle
+
+public class GameParticle
 {
     Texture2D particleTexture;
     float acceleration;
@@ -17,7 +19,7 @@ public class Particle
     int screenWidth;
     int screenHeight;
 
-    public Particle(Texture2D texture, 
+    public GameParticle(Texture2D texture, 
                     float startX = 0.0f, 
                     float startY = 0.0f, 
                     float accMag = 2.0f, 
@@ -47,7 +49,7 @@ public class Particle
         opacity = startOpacity;
     }
 
-    public void updateParticle(float dt)
+    public void UpdateParticle(float dt)
     {
         //Do velocity update
         speed += acceleration * dt;
@@ -102,10 +104,10 @@ public class Particle
     }
 }
 
-public class Background
+public class GameBackground
 {
     static readonly Random randint = new Random();
-    List<Particle> particles;
+    List<GameParticle> particles;
     Vector2 centrePoint;
     Texture2D particleTexture;
     Vector2 transformer = new Vector2(0.0f, 0.0f);
@@ -115,9 +117,9 @@ public class Background
 
     public float angle = 0.0f;
 
-    public Background(float xStart, float yStart, Texture2D inputTexture, float width, float height)
+    public GameBackground(float xStart, float yStart, Texture2D inputTexture, float width, float height)
     {
-        particles = new List<Particle>();
+        particles = new List<GameParticle>();
         centrePoint = new Vector2(xStart, yStart);
         particleTexture = inputTexture;
 
@@ -131,7 +133,7 @@ public class Background
     public void AddParticles()
     {
 
-        Particle newParticle = new Particle(
+        GameParticle newParticle = new GameParticle(
             texture: particleTexture,
             startX: centrePoint.X,
             startY: centrePoint.Y,
@@ -162,9 +164,9 @@ public class Background
 
     public void updateParticles(float dt)
     {
-        foreach (Particle particle in particles)
+        foreach (GameParticle particle in particles)
         {
-            particle.updateParticle(dt);
+            particle.UpdateParticle(dt);
         }
 
         particles.RemoveAll(p => p.life == 0.0f);
@@ -174,7 +176,7 @@ public class Background
 
     public void drawParticles(SpriteBatch sprite, Texture2D texture)
     {
-        foreach (Particle particle in particles)
+        foreach (GameParticle particle in particles)
         {
             particle.Draw(sprite, texture, transformer);
         }
@@ -184,5 +186,120 @@ public class Background
     {
         if (centrePoint.X > screenWidth || centrePoint.X < 0.0f) transformer.X *= -1;
         if (centrePoint.Y > screenHeight || centrePoint.Y < 0.0f) transformer.Y *= -1;
+    }
+}
+
+public class MenuParticle
+{
+    public Vector2 Position {get; private set;}
+    int height;
+    int width;
+    int HorizontalStep;
+    readonly Texture2D particleTexture;
+    Color ParticleColor;
+
+    public MenuParticle(float startX, float startY, Texture2D _texture, Color color, int step = -3, int h = 50, int w = 50)
+    {
+        Position = new Vector2(startX, startY);
+        particleTexture = _texture;
+
+        height = h;
+        width = w;
+
+        ParticleColor = color;
+    }
+
+    public void UpdateParticle()
+    {
+        Position = new Vector2(Position.X - 3, Position.Y);
+    }
+
+    public void Draw(SpriteBatch spriteBatch)
+    {
+        Rectangle ParticlePosition = new((int) Position.X, (int) Position.Y, width, height);
+        spriteBatch.Draw(particleTexture, ParticlePosition, ParticleColor);
+    }
+
+    public void moveParticle(float x, float y)
+    {
+        Position = new Vector2(Position.X + x, Position.Y + y);
+    }
+}
+
+public class MenuBackground
+{
+    Session session;
+    List<MenuParticle> Particles;
+    Texture2D ParticleTexture;
+    int particleSize = 0;
+    int numColumns = 0;
+    int numParticlesPerCol = 5;
+
+    public MenuBackground(Session inSession, Texture2D texture)
+    {
+        session = inSession;
+        ParticleTexture = texture;
+        Particles = PopulateParticles();
+    }
+
+    private List<MenuParticle> PopulateParticles()
+    {
+        List<MenuParticle> particles = [];
+
+        Color useColor = Color.White;
+
+        particleSize = (int) session.Height / numParticlesPerCol;
+
+        numColumns = (int) (session.Width / particleSize) + 2;
+
+        for (int y = 0; y < numParticlesPerCol; y++)
+        {
+            for (int x = 0; x < numColumns; x++)
+            {
+                MenuParticle particle = new(x * particleSize, y * particleSize, ParticleTexture, useColor, h: particleSize, w: particleSize);
+                particles.Add(particle);
+
+                if (useColor == Color.White)
+                {
+                    useColor = Color.Black;
+                } else
+                {
+                    useColor = Color.White;
+                }
+            }
+
+            if (useColor == Color.White)
+            {
+                useColor = Color.Black;
+            } else
+            {
+                useColor = Color.White;
+            }
+        }
+
+        return particles;
+    }
+
+    public void update(float dt)
+    {
+        float speed = 100f;
+
+        foreach (MenuParticle particle in Particles)
+        {
+            particle.moveParticle(-speed * dt, 0);
+
+            if (particle.Position.X <= -particleSize)
+            {
+                particle.moveParticle(particleSize * (numColumns), 0);
+            }
+        }
+    }
+
+    public void Draw(SpriteBatch spriteBatch)
+    {
+        foreach (MenuParticle particle in Particles)
+        {
+            particle.Draw(spriteBatch);
+        }
     }
 }

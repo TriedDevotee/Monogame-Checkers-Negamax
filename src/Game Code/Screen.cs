@@ -151,19 +151,42 @@ public class GameScreen : IScreen
 public class MenuScreen : IScreen
 {
     private readonly Session session;
+    private MenuBackground background;
+    private Texture2D baseTexture;
 
-    public MenuScreen(Session currentSession)
+    public MenuScreen(Session currentSession, Texture2D _texture)
     {
+        baseTexture = _texture;
+
         session = currentSession;
+        background = new(session, baseTexture);
     }
     
     public void UpdateScreen(GameTime gameTime)
     {
-        
+        background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
     }
 
     public void DrawScreen(SpriteBatch spriteBatch)
     {
-        
+        background.Draw(spriteBatch);
+
+        //Draws logo
+        Rectangle LogoShape = new(
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.1), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.3)
+        );
+
+        Rectangle EditionShape = new(
+            (int) (session.Width * 0.15),
+            (int) (session.Height * 0.28),
+            (int) (session.Width * 0.7),
+            (int) (session.Height * 0.15)
+        );
+
+        spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
+        spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
     }
 }

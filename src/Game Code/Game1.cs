@@ -31,16 +31,19 @@ public class Session
 {
     public Board Board {get;}
     public Main Game {get;}
-    public Background Back {get;}
+    public GameBackground Back {get;}
     public moveCache PlayedMove {get; private set;}
     public Position CurrentPosition {get; private set;}
     public GameState state {get; private set;}
+    public float Width {get; private set;}
+    public float Height {get; private set;}
     public bool ValidClickChecker {get; set;}
     public bool IsPlayerWhite {get;}
     public int FrameTimerForButtonPushing {get; set;}
     public int IndexOfCurrentPosition {get; set;}
+    public Dictionary<string, Texture2D> LoadedTextures {get; set;}
 
-    public Session(Board newBoard, Main newMain, Background newBack, moveCache newMove, Position newPos, bool Color)
+    public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool Color, float H, float W)
     {
         Board = newBoard;
         Game = newMain;
@@ -48,12 +51,17 @@ public class Session
         PlayedMove = newMove;
         CurrentPosition = newPos;
 
+        Width = W;
+        Height = H;
+
         state = GameState.InMenu;
         ValidClickChecker = true;
         FrameTimerForButtonPushing = 0;
         IndexOfCurrentPosition = 0;
 
         IsPlayerWhite = Color;
+        
+        LoadedTextures = new();
     }
 
     public void UpdateMove(moveCache newMove)
@@ -107,11 +115,11 @@ public class Game1 : Game
 
         Board newBoard = new(_texture);
         Main newGame = new();
-        Background back = new(newBoard.position.X + newBoard.width / 2.0f, newBoard.position.Y + newBoard.height / 2.0f, _texture, width, height);
+        GameBackground back = new(newBoard.position.X + newBoard.width / 2.0f, newBoard.position.Y + newBoard.height / 2.0f, _texture, width, height);
         moveCache playedMove = new(-1, -1);
         Position initialMove = new();
 
-        session = new(newBoard, newGame, back, playedMove, initialMove, true);
+        session = new(newBoard, newGame, back, playedMove, initialMove, true, height, width);
 
         session.Game.previousPositions.Add(new Position(
             session.Game.moves.WhitePieces.board, 
@@ -124,12 +132,20 @@ public class Game1 : Game
 
         currentScreen = new GameScreen(session, _texture);
 
+        currentScreen = new MenuScreen(session, _texture);
+
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+        Texture2D LogoImage = Content.Load<Texture2D>("LogoImage");
+        Texture2D EditionImage = Content.Load<Texture2D>("EditionImage");
+
+        session.LoadedTextures.Add("LogoImage", LogoImage);
+        session.LoadedTextures.Add("EditionImage", EditionImage);
 
         Viewport viewport = _graphics.GraphicsDevice.Viewport;
     }
