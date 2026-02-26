@@ -1,5 +1,6 @@
 Source File,Dest File,Processor Type,Content Type,Source File Size,Dest File Size,Build Seconds
-"d:/Coding/Comp Sci NEA/Content/EditionImage.png","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/EditionImage.xnb","TextureProcessor","Texture2DContent",70933,753749,0.3161999
-"d:/Coding/Comp Sci NEA/Content/LogoImage.png","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/LogoImage.xnb","TextureProcessor","Texture2DContent",65337,1069141,0.059658
-"d:/Coding/Comp Sci NEA/Content/Monocraft.spritefont","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.1007367
-"d:/Coding/Comp Sci NEA/Content/Papyrus.spritefont","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.0240312
+"d:/Coding/Comp Sci NEA/Content/EditionImage.png","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/EditionImage.xnb","TextureProcessor","Texture2DContent",70933,753749,0.033563
+"d:/Coding/Comp Sci NEA/Content/LogoImage.png","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/LogoImage.xnb","TextureProcessor","Texture2DContent",65337,1069141,0.0470473
+"d:/Coding/Comp Sci NEA/Content/menuButton.png","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/menuButton.xnb","TextureProcessor","Texture2DContent",5806,1055685,0.1968399
+"d:/Coding/Comp Sci NEA/Content/Monocraft.spritefont","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/Monocraft.xnb","FontDescriptionProcessor","SpriteFontContent",2072,21529,0.1273351
+"d:/Coding/Comp Sci NEA/Content/Papyrus.spritefont","d:/Coding/Comp Sci NEA/Content/bin/DesktopGL/Papyrus.xnb","FontDescriptionProcessor","SpriteFontContent",2070,21529,0.0376214

@@ -98,9 +98,6 @@ namespace Checkers
 
                 newPos.makePositionalMove(move, whiteTurn);
 
-                Moves chainChecker = new (whiteTurn);
-                chainChecker.SetUpPosition(newPos.whitePieces.board, newPos.blackPieces.board, newPos.kings.board);
-
                 float score = -Negamax(depth - 1, newPos, !whiteTurn, -alpha, -beta);
 
                 if (score > bestScore)

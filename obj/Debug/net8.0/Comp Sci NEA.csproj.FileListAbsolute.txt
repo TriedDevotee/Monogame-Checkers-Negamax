@@ -79,3 +79,4 @@ D:\Coding\Comp Sci NEA\obj\Debug\net8.0\ref\Comp Sci NEA.dll
 D:\Coding\Comp Sci NEA\bin\Debug\net8.0\Content\EditionImage.xnb
 D:\Coding\Comp Sci NEA\bin\Debug\net8.0\Content\LogoImage.xnb
 D:\Coding\Comp Sci NEA\bin\Debug\net8.0\Content\Steph.xnb
+D:\Coding\Comp Sci NEA\bin\Debug\net8.0\Content\menuButton.xnb

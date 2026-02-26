@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Checkers;
 using System.Linq;
 using Microsoft.Xna.Framework.Input;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+using System;
 
 public interface IScreen
 {
@@ -148,18 +151,46 @@ public class GameScreen : IScreen
     }  
 }
 
-public class MenuScreen : IScreen
+public class TitleScreen : IScreen
 {
     private readonly Session session;
     private MenuBackground background;
     private Texture2D baseTexture;
+    private ButtonManager buttons;
 
-    public MenuScreen(Session currentSession, Texture2D _texture)
+    public TitleScreen(Session currentSession, Texture2D _texture)
     {
         baseTexture = _texture;
 
         session = currentSession;
         background = new(session, baseTexture);
+
+        buttons = new();
+        setUpButtons();
+    }
+
+    private void setUpButtons()
+    {
+        buttons.AddButton(
+            "Single Player", 
+            Color.White, 
+            Color.Black, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.45), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        buttons.AddButton(
+            "Multiplayer", 
+            Color.White, 
+            Color.Black, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.57), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+        
     }
     
     public void UpdateScreen(GameTime gameTime)
@@ -188,5 +219,60 @@ public class MenuScreen : IScreen
 
         spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
         spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
+
+        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], session.LoadedTextures["MenuButton"]);
+    }
+}
+
+public class Button
+{
+    string ButtonContent;
+    Rectangle Position;
+    Color color;
+    Color textColor;
+
+    public Button(string BC, Color Color, Color tColor, int x, int y, int xDim, int yDim)
+    {
+        ButtonContent = BC;
+        color = Color;
+        textColor = tColor;
+        Position = new Rectangle(x, y, xDim, yDim);
+    }
+
+    public void Draw(SpriteBatch batch, SpriteFont font, Texture2D texture)
+    {
+        Vector2 textSize = font.MeasureString(ButtonContent);
+        Vector2 origin = textSize / 2f;
+        
+        Vector2 textPos = new(
+            Position.X + (Position.Width / 2f), 
+            Position.Y + (Position.Height / 2f));
+
+        batch.Draw(texture, Position, color);
+
+        batch.DrawString(font, ButtonContent, textPos, textColor, rotation: 0, origin, 1.25f, SpriteEffects.None, 0);
+    }
+}
+
+public class ButtonManager
+{
+    List<Button> buttons;
+
+    public ButtonManager()
+    {
+        buttons = new();
+    }
+
+    public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim)
+    {
+        buttons.Add(new(text, color, textColor, x, y, xDim, yDim));
+    }
+
+    public void DrawButtons(SpriteBatch batch, SpriteFont font, Texture2D texture)
+    {
+        foreach (Button button in buttons)
+        {
+            button.Draw(batch, font, texture);
+        }
     }
 }

@@ -42,6 +42,7 @@ public class Session
     public int FrameTimerForButtonPushing {get; set;}
     public int IndexOfCurrentPosition {get; set;}
     public Dictionary<string, Texture2D> LoadedTextures {get; set;}
+    public Dictionary<string, SpriteFont> LoadedFonts {get; set;}
 
     public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool Color, float H, float W)
     {
@@ -62,6 +63,7 @@ public class Session
         IsPlayerWhite = Color;
         
         LoadedTextures = new();
+        LoadedFonts = new();
     }
 
     public void UpdateMove(moveCache newMove)
@@ -113,9 +115,9 @@ public class Game1 : Game
         width = _graphics.PreferredBackBufferWidth;
         height = _graphics.PreferredBackBufferHeight;
 
-        Board newBoard = new(_texture);
+        Board newBoard = new(_texture, x: (int) (width / 2) - 200, y: (int) (height / 2) - 200);
         Main newGame = new();
-        GameBackground back = new(newBoard.position.X + newBoard.width / 2.0f, newBoard.position.Y + newBoard.height / 2.0f, _texture, width, height);
+        GameBackground back = new(newBoard.position.X + newBoard.width / 4.0f, newBoard.position.Y + newBoard.height / 4.0f, _texture, width, height);
         moveCache playedMove = new(-1, -1);
         Position initialMove = new();
 
@@ -132,7 +134,7 @@ public class Game1 : Game
 
         currentScreen = new GameScreen(session, _texture);
 
-        currentScreen = new MenuScreen(session, _texture);
+        currentScreen = new TitleScreen(session, _texture);
 
         base.Initialize();
     }
@@ -143,9 +145,15 @@ public class Game1 : Game
 
         Texture2D LogoImage = Content.Load<Texture2D>("LogoImage");
         Texture2D EditionImage = Content.Load<Texture2D>("EditionImage");
+        Texture2D MenuButton=  Content.Load<Texture2D>("menuButton");
 
         session.LoadedTextures.Add("LogoImage", LogoImage);
         session.LoadedTextures.Add("EditionImage", EditionImage);
+        session.LoadedTextures.Add("MenuButton", MenuButton);
+
+        SpriteFont MonoCraft = Content.LoadLocalized<SpriteFont>("Monocraft");
+
+        session.LoadedFonts.Add("Monocraft", MonoCraft);
 
         Viewport viewport = _graphics.GraphicsDevice.Viewport;
     }

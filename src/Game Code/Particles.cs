@@ -44,6 +44,7 @@ public class GameParticle
         screenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
 
         particleTexture = texture;
+        //This is quite literally never used 
 
         size = startSize;
         opacity = startOpacity;
@@ -51,16 +52,13 @@ public class GameParticle
 
     public void UpdateParticle(float dt)
     {
-        //Do velocity update
         speed += acceleration * dt;
 
         velocity.X = MathF.Cos(angle) * speed;
         velocity.Y = MathF.Sin(angle) * speed;
 
-        //Do position update
         position += velocity * dt ;
 
-        //Update life
         life -= dt;
 
         if (isOOB())
@@ -87,7 +85,12 @@ public class GameParticle
         Color color;
         float layer = 0.8f;
 
-        color = new Color((MathF.Cos(life) + 1f) * 0.5f, (MathF.Cos(life + 2.094f) + 1f) * 0.5f, (MathF.Cos(life + 4.188f) + 1f) * 0.5f) * alpha ;
+        const float radConst = (float) Math.PI / 180.0f;
+
+        color = new Color(
+            (MathF.Cos(life) + 1f) * 0.5f, 
+            (MathF.Cos(life + 120 * radConst) + 1f) * 0.5f, 
+            (MathF.Cos(life + 240 * radConst) + 1f) * 0.5f);
 
         sprites.Draw(
             texture, 
@@ -194,7 +197,6 @@ public class MenuParticle
     public Vector2 Position {get; private set;}
     int height;
     int width;
-    int HorizontalStep;
     readonly Texture2D particleTexture;
     Color ParticleColor;
 
@@ -261,8 +263,21 @@ public class MenuBackground
 
                 if (useColor == Color.White)
                 {
-                    useColor = Color.Black;
-                } else
+                    useColor = Color.Red;
+                } 
+                else if (useColor == Color.Red)
+                {
+                    useColor = Color.Yellow;
+                }
+                else if (useColor == Color.Yellow)
+                {
+                    useColor = Color.Green;
+                }
+                else if (useColor == Color.Green)
+                {
+                    useColor = Color.Blue;
+                }
+                else
                 {
                     useColor = Color.White;
                 }
@@ -270,11 +285,25 @@ public class MenuBackground
 
             if (useColor == Color.White)
             {
-                useColor = Color.Black;
-            } else
+                useColor = Color.Red;
+            } 
+            else if (useColor == Color.Red)
+            {
+                useColor = Color.Yellow;
+            }
+            else if (useColor == Color.Yellow)
+            {
+                useColor = Color.Green;
+            }
+            else if (useColor == Color.Green)
+            {
+                useColor = Color.Blue;
+            }
+            else
             {
                 useColor = Color.White;
             }
+
         }
 
         return particles;
