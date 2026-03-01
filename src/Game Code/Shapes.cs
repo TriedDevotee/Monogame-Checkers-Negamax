@@ -33,7 +33,7 @@ public struct ShapeBound
     }
 }
 
-public struct Shape
+public class Shape
 {
     public Texture2D texture;
     public Rectangle shapeObj;
@@ -52,6 +52,79 @@ public struct Shape
         index = i;
         isClicked = false;
         isSelected = false;
+    }
+
+    public void DrawShape(SpriteBatch batch, Color holdColor, bool doHold = false)
+    {
+        batch.Draw(texture, shapeObj, holdColor);
+    }
+}
+
+public class ShapeManager
+{
+    private List<Shape> shapes;
+    private Texture2D baseTexture;
+    
+    public ShapeManager(Texture2D texture)
+    {
+        baseTexture = texture;
+        shapes = new();
+    }
+
+    public void AddShapes(int x, int y, Color color, int xDim, int yDim)
+    {
+        shapes.Add(new(baseTexture, x, y, color, shapes.Count, yDim, xDim));
+    }
+
+    public void DrawShapes(SpriteBatch batch, Color color)
+    {
+        foreach (Shape shape in shapes)
+        {
+            shape.DrawShape(batch, color);
+        }
+    }
+
+    public void DrawSpecials(SpriteBatch batch, int[] specials, Color specialColor)
+    {
+        foreach (int special in specials)
+        {
+            shapes[special].DrawShape(batch, specialColor, true);
+        }
+    }
+
+    public int checkForSelectedShapes(MouseState mouse)
+    {
+        int retIndex = -1;
+
+        for (int i = 0; i < shapes.Count; i++)
+        {
+            Shape shape = shapes[i];
+            if (shape.shapeObj.Contains(new Point(mouse.X, mouse.Y))){
+                shape.isSelected = true;
+
+                if (mouse.LeftButton == ButtonState.Pressed)
+                {
+                    shape.isClicked = true;
+                } else
+                {
+                    shape.isClicked = false;
+                }
+
+                retIndex = i;
+            }
+            else
+            {
+                shape.isSelected = false;
+                shape.isClicked = false;
+            }
+        }
+
+        return retIndex;
+    }
+
+    public Shape getSelectedShapes(int index)
+    {
+        return shapes[index];
     }
 }
 
@@ -127,28 +200,5 @@ public class ButtonManager
         {
             button.Draw(batch, font, texture);
         }
-    }
-
-    public int getTouchedButtons(MouseState state)
-    {
-        Point mousePosition = new(state.X, state.Y);
-
-        foreach (Button button in buttons)
-        {
-            if (mousePosition.X > button.bounding.startX 
-                && mousePosition.X <= button.bounding.farX 
-                && mousePosition.Y > button.bounding.startY 
-                && mousePosition.Y <= button.bounding.farY)
-            {
-                return button.buttonID;
-            }
-        }
-
-        return -1;
-    }
-
-    public bool isMouseClicked(MouseState state)
-    {
-        return state.LeftButton == ButtonState.Pressed;
     }
 }

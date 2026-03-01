@@ -101,7 +101,7 @@ public class GameScreen : IScreen
             }
         }
 
-        FindSelectedSquare();
+        //FindSelectedSquare();
 
         int isGameOver = session.Game.checkForGameOver();
         if (isGameOver == 1 || isGameOver == 2 || isGameOver == 3) session.SetState(GameState.GameOver);
@@ -114,11 +114,12 @@ public class GameScreen : IScreen
         session.Board.DrawBoard(
             batch: _spriteBatch, 
             baseTexture: _texture, 
-            session: session
+            session: session,
+            mouseState
         );
     }
 
-    private void FindSelectedSquare()
+    /*private void FindSelectedSquare()
     {
         for (int i = 0; i < session.Board.heightNum; i++)
         {
@@ -150,7 +151,7 @@ public class GameScreen : IScreen
                 }
             }
         }
-    }
+    }*/
 
     private void UpdatePositionLog()
     {

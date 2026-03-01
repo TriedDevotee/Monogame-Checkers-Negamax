@@ -134,7 +134,7 @@ public class Game1 : Game
 
         currentScreen = new GameScreen(session, _texture);
 
-        currentScreen = new TitleScreen(session, _texture);
+        //currentScreen = new TitleScreen(session, _texture);
 
         base.Initialize();
     }

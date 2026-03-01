@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Checkers;
+using Microsoft.Xna.Framework.Input;
 
 namespace Comp_Sci_NEA;
 public class Board
@@ -13,7 +14,7 @@ public class Board
     public int widthNum;
     public int height;
     public int width;
-    public Shape[][] boardStore;
+    public ShapeManager shapes;
     public ShapeBound[][] shapeBounds;
     public Vector2 position;
     Texture2D baseTexture;
@@ -23,14 +24,6 @@ public class Board
         heightNum = h;
         widthNum = w;
 
-        boardStore = new Shape[heightNum][];
-        shapeBounds = new ShapeBound[heightNum][];
-        for (int i = 0; i < boardStore.Length; i++)
-        {
-            boardStore[i] = new Shape[widthNum];
-            shapeBounds[i] = new ShapeBound[widthNum];
-        }
-
         position = new Vector2(x, y);
 
         baseTexture = Texture;
@@ -38,8 +31,9 @@ public class Board
         height = height2;
         width = width2;
 
-        PopulateCheckersBoard();
+        shapes = new(baseTexture);
 
+        PopulateCheckersBoard();
     }
 
     private void PopulateCheckersBoard()
@@ -57,8 +51,7 @@ public class Board
 
                 Color shapeColor = whiteColor ? Color.White : Color.DarkSlateGray;
 
-                boardStore[i][j] = new Shape(baseTexture, startX, startY, shapeColor, 63 - ((i * 8) + j), shapeHeight, shapeWidth);
-                shapeBounds[i][j] = new ShapeBound(startX, startY, startX + shapeWidth, startY +shapeHeight);
+                shapes.AddShapes(startX, startY, shapeColor, shapeHeight, shapeWidth);
                 
                 whiteColor = !whiteColor;
             }
@@ -66,7 +59,7 @@ public class Board
         }
     }
 
-    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, Session session)
+    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, Session session, MouseState state)
     {
         Rectangle boardBack = new Rectangle((int) position.X - 5, (int) position.Y - 5, width + 10, height + 10);
 
@@ -85,47 +78,44 @@ public class Board
 
         Piece[][] pieces = session.Game.displayBoard;
 
-        for (int i = 0; i < heightNum; i++)
+        shapes.DrawShapes(batch, Color.White);
+
+        List<int> blackIndices = [];
+        int offset = 0;
+        for (int i = 0; i < 32; i++)
         {
-            for (int j = 0; j < widthNum; j++)
+            blackIndices.Add(i * 2 + offset);
+
+            if (blackIndices.Count % 4 == 0)
             {
-                Shape currentShape = boardStore[i][j];
-
-                if (currentShape.isSelected)
-                {
-                    if (currentShape.isClicked)
-                    {
-                        batch.Draw(currentShape.texture, currentShape.shapeObj, clickedColor);
-                    } else 
-                    {
-                        batch.Draw(currentShape.texture, currentShape.shapeObj, selectedColor);
-                    }
-                } else
-                {
-                    batch.Draw(currentShape.texture, currentShape.shapeObj, currentShape.currentColor);
-                }
-
-                if (currentShape.index == moveStartIndex && moveStartIndex >= 0)
-                {
-                    batch.Draw(currentShape.texture, currentShape.shapeObj, moveStart);
-                }
-
-                if (currentShape.index == moveEndIndex && moveEndIndex >= 0)
-                {
-                    batch.Draw(currentShape.texture, currentShape.shapeObj, moveEnd);
-                }
-
-                DrawPieces(i, j, pieces[i][j], batch, baseTexture);
-
-
+                offset = offset == 1 ? 0 : 1;
             }
         }
+        shapes.DrawSpecials(batch, blackIndices.ToArray(), Color.Black);
+
+        int selected = shapes.checkForSelectedShapes(state);
+        if (selected != -1)
+        {
+            Shape selectedShape = shapes.getSelectedShapes(selected);
+
+            Color useColor = Color.Blue;
+
+            if (selectedShape.isClicked)
+            {
+                useColor = Color.Red;
+            }
+
+            shapes.DrawSpecials(batch, [selected], useColor);
+        }
+
+        
+
     }
 
-    private void DrawPieces(int squareY, int squareX, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
+    private void DrawPieces(int squareY, int squareX, Shape currShape, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
     {
 
-        Rectangle pieceDims = boardStore[squareY][squareX].shapeObj;
+        Rectangle pieceDims = currShape.shapeObj;
 
         pieceDims.X += 5;
         pieceDims.Y += 5;
