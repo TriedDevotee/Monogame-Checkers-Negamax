@@ -12,10 +12,27 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System;
 
+public enum ScreenTypes
+{
+    None,
+    Game,
+    Title,
+    SinglePlayer,
+    Multiplayer,
+    Options,
+}
+
 public interface IScreen
 {
     public abstract void UpdateScreen(GameTime gameTime);
     public abstract void DrawScreen(SpriteBatch spriteBatch);
+}
+
+public interface IMenuScreen : IScreen
+{
+    protected abstract ButtonManager SetUpButtons();
+    protected abstract ScreenTypes[] getAllConnectedScreens();
+    protected abstract ScreenTypes getParentScreen();
 }
 
 public class GameScreen : IScreen
@@ -151,12 +168,14 @@ public class GameScreen : IScreen
     }  
 }
 
-public class TitleScreen : IScreen
+public class TitleScreen : IMenuScreen
 {
     private readonly Session session;
     private MenuBackground background;
     private Texture2D baseTexture;
     private ButtonManager buttons;
+    ScreenTypes[] connections;
+    ScreenTypes parentScreen;
 
     public TitleScreen(Session currentSession, Texture2D _texture)
     {
@@ -165,32 +184,67 @@ public class TitleScreen : IScreen
         session = currentSession;
         background = new(session, baseTexture);
 
-        buttons = new();
-        setUpButtons();
+        buttons = SetUpButtons();
+
+        connections = getAllConnectedScreens();
+        parentScreen = getParentScreen();
     }
 
-    private void setUpButtons()
+    public ScreenTypes[] getAllConnectedScreens()
     {
-        buttons.AddButton(
+        return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.Multiplayer];
+    }
+
+    public ScreenTypes getParentScreen()
+    {
+        return ScreenTypes.None;
+    }
+
+    public ButtonManager SetUpButtons()
+    {
+        ButtonManager newButtons = new();
+
+        newButtons.AddButton(
             "Single Player", 
+            Color.Gray, 
             Color.White, 
-            Color.Black, 
             (int) (session.Width * 0.2), 
             (int) (session.Height * 0.45), 
             (int) (session.Width * 0.6), 
             (int) (session.Height * 0.1)
         );
 
-        buttons.AddButton(
+        newButtons.AddButton(
             "Multiplayer", 
+            Color.Gray, 
             Color.White, 
-            Color.Black, 
             (int) (session.Width * 0.2), 
             (int) (session.Height * 0.57), 
             (int) (session.Width * 0.6), 
             (int) (session.Height * 0.1)
         );
+
+        newButtons.AddButton(
+            "Options", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Quit Game", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.52), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
         
+        return newButtons;
     }
     
     public void UpdateScreen(GameTime gameTime)
@@ -220,59 +274,367 @@ public class TitleScreen : IScreen
         spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
         spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
 
-        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], session.LoadedTextures["MenuButton"]);
-    }
+        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+    }   
 }
 
-public class Button
+public class OptionsScreen : IMenuScreen
 {
-    string ButtonContent;
-    Rectangle Position;
-    Color color;
-    Color textColor;
+    private readonly Session session;
+    private MenuBackground background;
+    private Texture2D baseTexture;
+    private ButtonManager buttons;
+    ScreenTypes[] connections;
+    ScreenTypes parentScreen;
 
-    public Button(string BC, Color Color, Color tColor, int x, int y, int xDim, int yDim)
+    public OptionsScreen(Session currentSession, Texture2D _texture)
     {
-        ButtonContent = BC;
-        color = Color;
-        textColor = tColor;
-        Position = new Rectangle(x, y, xDim, yDim);
+        baseTexture = _texture;
+
+        session = currentSession;
+        background = new(session, baseTexture);
+
+        buttons = SetUpButtons();
+
+        connections = getAllConnectedScreens();
+        parentScreen = getParentScreen();
     }
 
-    public void Draw(SpriteBatch batch, SpriteFont font, Texture2D texture)
+    public ScreenTypes[] getAllConnectedScreens()
     {
-        Vector2 textSize = font.MeasureString(ButtonContent);
-        Vector2 origin = textSize / 2f;
+        return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.Multiplayer];
+    }
+
+    public ScreenTypes getParentScreen()
+    {
+        return ScreenTypes.None;
+    }
+
+    public ButtonManager SetUpButtons()
+    {
+        ButtonManager newButtons = new();
+
+        newButtons.AddButton(
+            "Single Player", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.45), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Multiplayer", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.57), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Options", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Quit Game", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.52), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
         
-        Vector2 textPos = new(
-            Position.X + (Position.Width / 2f), 
-            Position.Y + (Position.Height / 2f));
-
-        batch.Draw(texture, Position, color);
-
-        batch.DrawString(font, ButtonContent, textPos, textColor, rotation: 0, origin, 1.25f, SpriteEffects.None, 0);
+        return newButtons;
     }
+    
+    public void UpdateScreen(GameTime gameTime)
+    {
+        background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
+    }
+
+    public void DrawScreen(SpriteBatch spriteBatch)
+    {
+        background.Draw(spriteBatch);
+
+        //Draws logo
+        Rectangle LogoShape = new(
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.1), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.3)
+        );
+
+        Rectangle EditionShape = new(
+            (int) (session.Width * 0.15),
+            (int) (session.Height * 0.28),
+            (int) (session.Width * 0.7),
+            (int) (session.Height * 0.15)
+        );
+
+        spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
+        spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
+
+        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+    }   
+}
+public class SinglePlayerScreen : IMenuScreen
+{
+    private readonly Session session;
+    private MenuBackground background;
+    private Texture2D baseTexture;
+    private ButtonManager buttons;
+    ScreenTypes[] connections;
+    ScreenTypes parentScreen;
+
+    public SinglePlayerScreen(Session currentSession, Texture2D _texture)
+    {
+        baseTexture = _texture;
+
+        session = currentSession;
+        background = new(session, baseTexture);
+
+        buttons = SetUpButtons();
+
+        connections = getAllConnectedScreens();
+        parentScreen = getParentScreen();
+    }
+
+    public ScreenTypes[] getAllConnectedScreens()
+    {
+        return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.Multiplayer];
+    }
+
+    public ScreenTypes getParentScreen()
+    {
+        return ScreenTypes.None;
+    }
+
+    public ButtonManager SetUpButtons()
+    {
+        ButtonManager newButtons = new();
+
+        newButtons.AddButton(
+            "Single Player", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.45), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Multiplayer", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.57), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Options", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Quit Game", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.52), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
+        
+        return newButtons;
+    }
+    
+    public void UpdateScreen(GameTime gameTime)
+    {
+        background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
+    }
+
+    public void DrawScreen(SpriteBatch spriteBatch)
+    {
+        background.Draw(spriteBatch);
+
+        //Draws logo
+        Rectangle LogoShape = new(
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.1), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.3)
+        );
+
+        Rectangle EditionShape = new(
+            (int) (session.Width * 0.15),
+            (int) (session.Height * 0.28),
+            (int) (session.Width * 0.7),
+            (int) (session.Height * 0.15)
+        );
+
+        spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
+        spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
+
+        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+    }   
+}
+public class MultiplayerScreen : IMenuScreen
+{
+    private readonly Session session;
+    private MenuBackground background;
+    private Texture2D baseTexture;
+    private ButtonManager buttons;
+    ScreenTypes[] connections;
+    ScreenTypes parentScreen;
+
+    public MultiplayerScreen(Session currentSession, Texture2D _texture)
+    {
+        baseTexture = _texture;
+
+        session = currentSession;
+        background = new(session, baseTexture);
+
+        buttons = SetUpButtons();
+
+        connections = getAllConnectedScreens();
+        parentScreen = getParentScreen();
+    }
+
+    public ScreenTypes[] getAllConnectedScreens()
+    {
+        return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.Multiplayer];
+    }
+
+    public ScreenTypes getParentScreen()
+    {
+        return ScreenTypes.None;
+    }
+
+    public ButtonManager SetUpButtons()
+    {
+        ButtonManager newButtons = new();
+
+        newButtons.AddButton(
+            "Single Player", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.45), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Multiplayer", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.57), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Options", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
+
+        newButtons.AddButton(
+            "Quit Game", 
+            Color.Gray, 
+            Color.White, 
+            (int) (session.Width * 0.52), 
+            (int) (session.Height * 0.69), 
+            (int) (session.Width * 0.28), 
+            (int) (session.Height * 0.1)
+        );
+        
+        return newButtons;
+    }
+    
+    public void UpdateScreen(GameTime gameTime)
+    {
+        background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
+    }
+
+    public void DrawScreen(SpriteBatch spriteBatch)
+    {
+        background.Draw(spriteBatch);
+
+        //Draws logo
+        Rectangle LogoShape = new(
+            (int) (session.Width * 0.2), 
+            (int) (session.Height * 0.1), 
+            (int) (session.Width * 0.6), 
+            (int) (session.Height * 0.3)
+        );
+
+        Rectangle EditionShape = new(
+            (int) (session.Width * 0.15),
+            (int) (session.Height * 0.28),
+            (int) (session.Width * 0.7),
+            (int) (session.Height * 0.15)
+        );
+
+        spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
+        spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
+
+        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+    }   
 }
 
-public class ButtonManager
+public class ScreenManager
 {
-    List<Button> buttons;
+    Session session;
+    Texture2D basetexture;
+    Dictionary<ScreenTypes, IScreen> Screens;
+    ScreenTypes currScreenType;
+    IScreen currScreen;
+    ScreenTypes[] currScreenConnections;
+    ScreenTypes PreviousScreen;
 
-    public ButtonManager()
+    public ScreenManager(Session currSession, Texture2D texture, ScreenTypes initialScreen = ScreenTypes.Title)
     {
-        buttons = new();
+        session = currSession;
+        basetexture = texture;
+        currScreenType = initialScreen;
+
+        Screens = CollectScreenTypes();
     }
 
-    public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim)
+    private Dictionary<ScreenTypes, IScreen> CollectScreenTypes()
     {
-        buttons.Add(new(text, color, textColor, x, y, xDim, yDim));
-    }
+        Dictionary<ScreenTypes, IScreen> screens = new();
 
-    public void DrawButtons(SpriteBatch batch, SpriteFont font, Texture2D texture)
-    {
-        foreach (Button button in buttons)
-        {
-            button.Draw(batch, font, texture);
-        }
+        screens.Add(ScreenTypes.Game, new GameScreen(session, basetexture));
+        screens.Add(ScreenTypes.Title, new TitleScreen(session, basetexture));
+        screens.Add(ScreenTypes.Options, new OptionsScreen(session, basetexture));
+        screens.Add(ScreenTypes.SinglePlayer, new SinglePlayerScreen(session, basetexture));
+        screens.Add(ScreenTypes.Multiplayer, new MultiplayerScreen(session, basetexture));
+
+        return screens;
     }
 }
