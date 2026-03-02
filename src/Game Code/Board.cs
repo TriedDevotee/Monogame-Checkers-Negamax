@@ -113,46 +113,25 @@ public class Board
             for (int y = 0; y < 8; y++)
             {
                 int shapeIndex = (x * 8) + y;
-                DrawPieces(y, x, shapes.getSelectedShapes(shapeIndex), pieces[x][y], batch, baseTexture);
+                DrawPieces(shapes.getSelectedShapes(shapeIndex), pieces[x][y], batch, baseTexture);
             }
         }
 
     }
 
-    private void DrawPieces(int squareY, int squareX, Shape currShape, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
+    private void DrawPieces(Shape currShape, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
     {
 
-        Rectangle pieceDims = currShape.shapeObj;
+        Rectangle pieceDims = new(
+            currShape.shapeObj.X + 5, 
+            currShape.shapeObj.Y + 5, 
+            currShape.shapeObj.Width - 10, 
+            currShape.shapeObj.Height - 10);
 
-        pieceDims.X += 5;
-        pieceDims.Y += 5;
-        pieceDims.Height -= 10;
-        pieceDims.Width -= 10;
+        Color usingColor = currentPiece.isWhite ? Color.HotPink : Color.Indigo;
+        usingColor = currentPiece.isWhite && currentPiece.isKing ? Color.Yellow : usingColor;
+        usingColor = !currentPiece.isWhite && currentPiece.isKing ? Color.Orange : usingColor;
 
-        Color usingColor;
-
-        if (currentPiece.isFull){
-
-            if (currentPiece.isWhite)
-            {
-                usingColor = Color.HotPink;
-
-                if (currentPiece.isKing)
-                {
-                    usingColor = Color.Yellow;
-                }
-                
-            } else
-            {
-                usingColor = Color.Indigo;
-
-                if (currentPiece.isKing)
-                {
-                    usingColor = Color.Orange;
-                }
-            }
-
-            batch.Draw(baseTexture, pieceDims, usingColor);
-        }
+        if(currentPiece.isFull) batch.Draw(baseTexture, pieceDims, usingColor);
     }
 }
