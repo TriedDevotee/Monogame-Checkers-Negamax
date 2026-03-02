@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Input;
 namespace Comp_Sci_NEA;
 public class Board
 {
+    public Session currSession;
     public int heightNum;
     public int widthNum;
     public int height;
@@ -21,6 +22,7 @@ public class Board
 
     public Board(Texture2D Texture, int h = 8, int w = 8, int height2 = 400, int width2 = 400, int x = 50, int y = 50)
     {
+
         heightNum = h;
         widthNum = w;
 
@@ -59,7 +61,8 @@ public class Board
         }
     }
 
-    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, Session session, MouseState state)
+
+    public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, Session session, MouseState prevState, MouseState state)
     {
         Rectangle boardBack = new Rectangle((int) position.X - 5, (int) position.Y - 5, width + 10, height + 10);
 
@@ -93,9 +96,28 @@ public class Board
         }
         shapes.DrawSpecials(batch, blackIndices.ToArray(), Color.Black);
 
-        int selected = shapes.checkForSelectedShapes(state);
+        int selected = shapes.checkForSelectedShapes(prevState, state);
         if (selected != -1)
         {
+            int row = selected / 8;
+            int col = selected % 8;
+
+            bool IsClickableSquare = session.Game.displayBoard[row][col].isFull && session.PlayedMove.start == -1 && session.IsPlayerWhite == session.Game.displayBoard[row][col].isWhite;
+
+            if (shapes.getSelectedShapes(selected).isClicked)
+            {
+                if (session.PlayedMove.start == -1){
+                    if (IsClickableSquare)
+                    {
+                        session.AddToMove(selected);
+                    }
+                }
+                else
+                {
+                    session.AddToMove(selected);
+                }
+            }
+
             Shape selectedShape = shapes.getSelectedShapes(selected);
 
             Color useColor = Color.Blue;
@@ -106,6 +128,16 @@ public class Board
             }
 
             shapes.DrawSpecials(batch, [selected], useColor);
+        }
+
+        if (session.PlayedMove.start != -1)
+        {
+            shapes.DrawSpecials(batch, [session.PlayedMove.start], Color.Green);
+        }
+
+        if (session.PlayedMove.moveTo != -1)
+        {
+            shapes.DrawSpecials(batch, [session.PlayedMove.moveTo], Color.Purple);
         }
 
         for (int x = 0; x < 8; x++)

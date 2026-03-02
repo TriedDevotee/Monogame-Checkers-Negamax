@@ -92,7 +92,7 @@ public class ShapeManager
         }
     }
 
-    public int checkForSelectedShapes(MouseState mouse)
+    public int checkForSelectedShapes(MouseState prevState, MouseState mouse)
     {
         int retIndex = -1;
 
@@ -102,7 +102,8 @@ public class ShapeManager
             if (shape.shapeObj.Contains(new Point(mouse.X, mouse.Y))){
                 shape.isSelected = true;
 
-                if (mouse.LeftButton == ButtonState.Pressed)
+                if (mouse.LeftButton == ButtonState.Pressed 
+                    && prevState.LeftButton == ButtonState.Released)
                 {
                     shape.isClicked = true;
                 } else

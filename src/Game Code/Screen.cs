@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System;
+using System.Globalization;
 
 public enum ScreenTypes
 {
@@ -76,16 +77,18 @@ public class GameScreen : IScreen
             if (session.state == GameState.MoveInput)
             {
                 if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
-                    bool movePlayed = session.Game.MakeHumanMove(session.PlayedMove);
+                    moveCache inpMove = new(63-session.PlayedMove.start, 63-session.PlayedMove.moveTo);
 
-                    if (movePlayed) session.SetState(GameState.MoveResolved);
+                    bool movePlayed = session.Game.MakeHumanMove(inpMove);
 
-                    session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
+                    if (movePlayed){
+                        session.SetState(GameState.MoveResolved);
+                        session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
+                    }
 
                     if (session.state == GameState.MoveResolved && !session.Game.waitingForBranchInput)
                     {
                         session.SetState(GameState.BotMoving);
-
                         UpdatePositionLog();
                     }
                 }
@@ -101,7 +104,7 @@ public class GameScreen : IScreen
             }
         }
 
-        //FindSelectedSquare();
+        
 
         int isGameOver = session.Game.checkForGameOver();
         if (isGameOver == 1 || isGameOver == 2 || isGameOver == 3) session.SetState(GameState.GameOver);
@@ -115,6 +118,7 @@ public class GameScreen : IScreen
             batch: _spriteBatch, 
             baseTexture: _texture, 
             session: session,
+            previousMouseState,
             mouseState
         );
     }
