@@ -108,7 +108,14 @@ public class Board
             shapes.DrawSpecials(batch, [selected], useColor);
         }
 
-        
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                int shapeIndex = (x * 8) + y;
+                DrawPieces(y, x, shapes.getSelectedShapes(shapeIndex), pieces[x][y], batch, baseTexture);
+            }
+        }
 
     }
 
