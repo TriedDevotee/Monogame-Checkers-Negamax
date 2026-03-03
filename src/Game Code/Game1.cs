@@ -43,6 +43,7 @@ public class Session
     public int IndexOfCurrentPosition {get; set;}
     public Dictionary<string, Texture2D> LoadedTextures {get; set;}
     public Dictionary<string, SpriteFont> LoadedFonts {get; set;}
+    public ConfigData userConfig;
 
     public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool Color, float H, float W)
     {
@@ -64,6 +65,8 @@ public class Session
         
         LoadedTextures = new();
         LoadedFonts = new();
+
+        userConfig = new();
     }
 
     public void UpdateMove(moveCache newMove)
@@ -136,6 +139,8 @@ public class Game1 : Game
 
         //currentScreen = new TitleScreen(session, _texture);
 
+        //currentScreen = new OptionsScreen(session, _texture);
+
         base.Initialize();
     }
 
@@ -197,6 +202,11 @@ public class Game1 : Game
         Console.WriteLine(session.state);
 
         currentScreen.UpdateScreen(gameTime);
+
+        if (Keyboard.GetState().IsKeyDown(Keys.J))
+        {
+            session.userConfig.updateConfig();
+        }
 
         base.Update(gameTime);
     }

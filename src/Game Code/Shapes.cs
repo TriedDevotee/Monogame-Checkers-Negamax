@@ -203,3 +203,101 @@ public class ButtonManager
         }
     }
 }
+
+public class Slider
+{
+    Rectangle Bar;
+    Rectangle Knob;
+    Color barColor;
+    Color knobColor;
+    Texture2D baseTexture;
+    int barLength;
+    public float fractionMade {get; private set;}
+    public Slider(Texture2D texture, int xPos, int yPos, int length = 47, int height = 10, int knobDIm = 10)
+    {
+        Bar = new Rectangle(xPos, yPos, length, height);
+        Knob = new Rectangle(xPos, yPos, knobDIm, height);
+
+        barColor = Color.Gray;
+        knobColor = Color.DarkGray;
+
+        barLength = length;
+
+        fractionMade = 0f;
+
+        baseTexture = texture;
+    }
+
+    public void updateSlider(MouseState state)
+    {
+        if (Bar.Contains(state.Position) && state.LeftButton == ButtonState.Pressed)
+        {
+            Knob.X = state.X;
+        }
+
+        fractionMade = (float) (Knob.X - Bar.X) / (float)barLength;
+        fractionMade = MathHelper.Clamp(fractionMade, 0f, 1f);
+    }
+
+    public void drawSlider(SpriteBatch batch)
+    {
+        Rectangle offsetSection = new(
+            Bar.X + barLength,
+            Bar.Y,
+            Knob.Width,
+            Bar.Height
+        );
+
+        batch.Draw(baseTexture, Bar, barColor);
+        batch.Draw(baseTexture, offsetSection, barColor);
+
+        batch.Draw(baseTexture, Knob, knobColor);
+    }
+}
+
+public class SliderColorMaker
+{
+    int xPos;
+    int yPos;
+    int xOffset;
+    int yOffset;
+    Slider[] sliders;
+    public Color color;
+    public SliderColorMaker(Texture2D texture, int x, int y, int xOff, int yOff, int barLength)
+    {
+        xPos = x;
+        yPos = y;
+        xOffset = xOff;
+        yOffset = yOff;
+
+        sliders = [
+            new(texture, xPos, yPos, length : barLength),
+            new(texture, xPos + xOffset, yPos + yOffset, length : barLength),
+            new(texture, xPos + xOffset * 2, yPos + yOffset * 2, length : barLength),
+        ];
+
+        color = Color.Black;
+    }
+
+    public void updateSliders(MouseState state)
+    {
+        foreach (Slider slider in sliders)
+        {
+            slider.updateSlider(state);
+        }
+
+        float red = sliders[0].fractionMade * 255;
+        float green = sliders[1].fractionMade * 255;
+        float blue = sliders[2].fractionMade * 255;
+
+        color = new(red, green, blue);
+    }
+
+    public void drawSliders(SpriteBatch batch)
+    {
+        foreach (Slider slider in sliders)
+        {
+            slider.drawSlider(batch);
+        }
+    }
+}

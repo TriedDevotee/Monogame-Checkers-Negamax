@@ -123,40 +123,6 @@ public class GameScreen : IScreen
         );
     }
 
-    /*private void FindSelectedSquare()
-    {
-        for (int i = 0; i < session.Board.heightNum; i++)
-        {
-            for (int j = 0; j < session.Board.widthNum; j++)
-            {
-                ShapeBound bound = session.Board.shapeBounds[i][j];
-
-                bool isSelected = mouseState.Position.X >= bound.startX 
-                    && mouseState.Position.X < bound.farX 
-                    && mouseState.Position.Y >= bound.startY 
-                    && mouseState.Position.Y < bound.farY;
-
-                session.Board.boardStore[i][j].isSelected = isSelected;
-
-                bool IsClickableSquare = session.Game.displayBoard[i][j].isFull && session.PlayedMove.start == -1 && session.IsPlayerWhite == session.Game.displayBoard[i][j].isWhite;
-
-                if (leftClicked && isSelected)
-                {
-                    if (IsClickableSquare || session.PlayedMove.start != -1){
-                        session.Board.boardStore[i][j].isClicked = true;
-                        session.AddToMove(session.Board.boardStore[i][j].index);
-                    } else
-                    {
-                        session.UpdateMove(new());
-                    }
-                } else
-                {
-                    session.Board.boardStore[i][j].isClicked = false;
-                }
-            }
-        }
-    }*/
-
     private void UpdatePositionLog()
     {
        session.Game.previousPositions.Add(
@@ -288,9 +254,13 @@ public class OptionsScreen : IMenuScreen
     private readonly Session session;
     private MenuBackground background;
     private Texture2D baseTexture;
+    private ShapeManager shapes;
     private ButtonManager buttons;
+    private SliderColorMaker sliders;
     ScreenTypes[] connections;
     ScreenTypes parentScreen;
+    MouseState state;
+
 
     public OptionsScreen(Session currentSession, Texture2D _texture)
     {
@@ -303,6 +273,9 @@ public class OptionsScreen : IMenuScreen
 
         connections = getAllConnectedScreens();
         parentScreen = getParentScreen();
+
+        state = Mouse.GetState();
+        sliders = new SliderColorMaker(baseTexture, 500, 300, 0, 15, 240);
     }
 
     public ScreenTypes[] getAllConnectedScreens()
@@ -318,53 +291,17 @@ public class OptionsScreen : IMenuScreen
     public ButtonManager SetUpButtons()
     {
         ButtonManager newButtons = new();
-
-        newButtons.AddButton(
-            "Single Player", 
-            Color.Gray, 
-            Color.White, 
-            (int) (session.Width * 0.2), 
-            (int) (session.Height * 0.45), 
-            (int) (session.Width * 0.6), 
-            (int) (session.Height * 0.1)
-        );
-
-        newButtons.AddButton(
-            "Multiplayer", 
-            Color.Gray, 
-            Color.White, 
-            (int) (session.Width * 0.2), 
-            (int) (session.Height * 0.57), 
-            (int) (session.Width * 0.6), 
-            (int) (session.Height * 0.1)
-        );
-
-        newButtons.AddButton(
-            "Options", 
-            Color.Gray, 
-            Color.White, 
-            (int) (session.Width * 0.2), 
-            (int) (session.Height * 0.69), 
-            (int) (session.Width * 0.28), 
-            (int) (session.Height * 0.1)
-        );
-
-        newButtons.AddButton(
-            "Quit Game", 
-            Color.Gray, 
-            Color.White, 
-            (int) (session.Width * 0.52), 
-            (int) (session.Height * 0.69), 
-            (int) (session.Width * 0.28), 
-            (int) (session.Height * 0.1)
-        );
         
         return newButtons;
     }
     
     public void UpdateScreen(GameTime gameTime)
     {
+        state = Mouse.GetState();
+
         background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
+
+        sliders.updateSliders(state);
     }
 
     public void DrawScreen(SpriteBatch spriteBatch)
@@ -389,7 +326,13 @@ public class OptionsScreen : IMenuScreen
         spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
         spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
 
-        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+        //buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+
+        Rectangle colorTest = new(300, 300, 100, 100);
+
+        sliders.drawSliders(spriteBatch);
+
+        spriteBatch.Draw(baseTexture, colorTest, sliders.color);
     }   
 }
 public class SinglePlayerScreen : IMenuScreen

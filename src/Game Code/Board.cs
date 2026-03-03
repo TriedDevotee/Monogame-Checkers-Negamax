@@ -69,10 +69,29 @@ public class Board
         batch.Draw(baseTexture, boardBack, Color.SlateGray);
 
 
-        Color selectedColor = Color.Blue;
-        Color clickedColor = Color.Red;
-        Color moveStart = Color.Lime;
-        Color moveEnd = Color.BlueViolet;
+        Color player1 = new Color(
+            session.userConfig.config.white_player_color.r, 
+            session.userConfig.config.white_player_color.g, 
+            session.userConfig.config.white_player_color.b, 
+            session.userConfig.config.white_player_color.a);
+
+        Color player2 = new Color(
+            session.userConfig.config.black_player_color.r, 
+            session.userConfig.config.black_player_color.g, 
+            session.userConfig.config.black_player_color.b, 
+            session.userConfig.config.black_player_color.a);
+        
+        Color board1 = new Color(
+            session.userConfig.config.board_color_1.r, 
+            session.userConfig.config.board_color_1.g, 
+            session.userConfig.config.board_color_1.b, 
+            session.userConfig.config.board_color_1.a);
+        
+        Color board2 = new Color(
+            session.userConfig.config.board_color_2.r, 
+            session.userConfig.config.board_color_2.g, 
+            session.userConfig.config.board_color_2.b, 
+            session.userConfig.config.board_color_2.a);
 
         int moveStartIndex = session.PlayedMove.start;
         int moveEndIndex = session.PlayedMove.moveTo;
@@ -81,7 +100,7 @@ public class Board
 
         Piece[][] pieces = session.Game.displayBoard;
 
-        shapes.DrawShapes(batch, Color.White);
+        shapes.DrawShapes(batch, board1);
 
         List<int> blackIndices = [];
         int offset = 0;
@@ -94,7 +113,7 @@ public class Board
                 offset = offset == 1 ? 0 : 1;
             }
         }
-        shapes.DrawSpecials(batch, blackIndices.ToArray(), Color.Black);
+        shapes.DrawSpecials(batch, blackIndices.ToArray(), board2);
 
         int selected = shapes.checkForSelectedShapes(prevState, state);
         if (selected != -1)
@@ -102,7 +121,9 @@ public class Board
             int row = selected / 8;
             int col = selected % 8;
 
-            bool IsClickableSquare = session.Game.displayBoard[row][col].isFull && session.PlayedMove.start == -1 && session.IsPlayerWhite == session.Game.displayBoard[row][col].isWhite;
+            bool IsClickableSquare = session.Game.displayBoard[row][col].isFull 
+                && session.PlayedMove.start == -1 
+                && session.IsPlayerWhite == session.Game.displayBoard[row][col].isWhite;
 
             if (shapes.getSelectedShapes(selected).isClicked)
             {
@@ -145,13 +166,13 @@ public class Board
             for (int y = 0; y < 8; y++)
             {
                 int shapeIndex = (x * 8) + y;
-                DrawPieces(shapes.getSelectedShapes(shapeIndex), pieces[x][y], batch, baseTexture);
+                DrawPieces(shapes.getSelectedShapes(shapeIndex), pieces[x][y], batch, baseTexture, player1, player2);
             }
         }
 
     }
 
-    private void DrawPieces(Shape currShape, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture)
+    private void DrawPieces(Shape currShape, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture, Color player1, Color player2)
     {
 
         Rectangle pieceDims = new(
@@ -160,7 +181,7 @@ public class Board
             currShape.shapeObj.Width - 10, 
             currShape.shapeObj.Height - 10);
 
-        Color usingColor = currentPiece.isWhite ? Color.HotPink : Color.Indigo;
+        Color usingColor = currentPiece.isWhite ? player1 : player2;
         usingColor = currentPiece.isWhite && currentPiece.isKing ? Color.Yellow : usingColor;
         usingColor = !currentPiece.isWhite && currentPiece.isKing ? Color.Orange : usingColor;
 
