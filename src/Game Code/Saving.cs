@@ -14,6 +14,16 @@ public class ColorObject
     public byte b { get; set; }
     public byte a { get; set; }
 
+    public ColorObject() {}
+
+    public ColorObject(float red, float green, float blue, float alpha)
+    {
+        r = (byte) red;
+        g = (byte) green;
+        b = (byte) blue;
+        a = (byte) alpha;
+    }
+
     public Color GetColor()
     {
         return new(r, g, b, a);
@@ -59,6 +69,7 @@ public class ConfigData
 
     private GameData LoadConfig()
     {
+
         if (!File.Exists(configPath))
         {
             GameData defaultData = useDefaultData();
@@ -75,14 +86,14 @@ public class ConfigData
         {
             GameData defaultData = useDefaultData();
             config = defaultData;
-            SaveConfig();
+            SaveConfig(defaultData);
             return defaultData;
         }
     }
 
-    public void SaveConfig()
+    public void SaveConfig(GameData newConfig)
     {
-        string json = JsonSerializer.Serialize(config);
+        string json = JsonSerializer.Serialize(newConfig);
         File.WriteAllText(configPath, json);
     }
 

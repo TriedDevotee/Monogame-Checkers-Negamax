@@ -45,6 +45,7 @@ public class Session
     public Dictionary<string, SpriteFont> LoadedFonts {get; set;}
     public ConfigData userConfig;
     public Color bgColor;
+    public bool doExit;
 
     public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool color, float H, float W)
     {
@@ -70,6 +71,7 @@ public class Session
         userConfig = new();
 
         bgColor = Color.Black;
+        doExit = false;
     }
 
     public void UpdateMove(moveCache newMove)
@@ -103,8 +105,7 @@ public class Game1 : Game
     float height;
 
     Session session; 
-
-    IScreen currentScreen;
+    ScreenManager screens;
 
     public Game1()
     {
@@ -135,15 +136,11 @@ public class Game1 : Game
             session.Game.moves.Kings.board
         ));
 
+        screens = new(session, _texture, ScreenTypes.Options);
+
         session.IndexOfCurrentPosition++;
         session.UpdatePosition(session.Game.previousPositions.Last());
-
-        currentScreen = new GameScreen(session, _texture);
-
-        //currentScreen = new TitleScreen(session, _texture);
-
-        currentScreen = new OptionsScreen(session, _texture);
-
+        
         base.Initialize();
     }
 
@@ -170,6 +167,11 @@ public class Game1 : Game
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
+
+        if (session.doExit)
+        {
+            Exit();
+        }
 
         if (Keyboard.GetState().IsKeyDown(Keys.Left) && session.IndexOfCurrentPosition > 1 && session.FrameTimerForButtonPushing == 0)
         {
@@ -204,7 +206,7 @@ public class Game1 : Game
 
         Console.WriteLine(session.state);
 
-        currentScreen.UpdateScreen(gameTime);
+        screens.currScreen.UpdateScreen(gameTime);
 
         if (Keyboard.GetState().IsKeyDown(Keys.J))
         {
@@ -220,7 +222,7 @@ public class Game1 : Game
 
         _spriteBatch.Begin();
 
-        currentScreen.DrawScreen(_spriteBatch);
+        screens.currScreen.DrawScreen(_spriteBatch);
         
         _spriteBatch.End();
 

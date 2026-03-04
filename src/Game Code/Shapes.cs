@@ -148,16 +148,18 @@ public class Button
 {
     public int buttonID {get; private set;}
     string ButtonContent;
-    Rectangle Position;
+    public Rectangle Position;
     Color color;
     Color textColor;
     public ShapeBound bounding {get; private set;}
     bool doShadow = true;
 
-    bool isSelected;
-    bool isClicked;
+    public ButtonFunctions purpose;
 
-    public Button(int ID, string BC, Color Color, Color tColor, int x, int y, int xDim, int yDim)
+    public bool isSelected;
+    public bool isClicked;
+
+    public Button(int ID, string BC, Color Color, Color tColor, int x, int y, int xDim, int yDim, ButtonFunctions func)
     {
         buttonID = ID;
         ButtonContent = BC;
@@ -166,6 +168,8 @@ public class Button
         Position = new Rectangle(x, y, xDim, yDim);
 
         bounding = new(x, y, x + xDim, y + yDim);
+
+        purpose = func;
     }
 
     public void Draw(SpriteBatch batch, SpriteFont font, Texture2D texture)
@@ -205,9 +209,9 @@ public class ButtonManager
         buttons = new();
     }
 
-    public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim)
+    public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim, ButtonFunctions purpose)
     {
-        buttons.Add(new(buttons.Count, text, color, textColor, x, y, xDim, yDim));
+        buttons.Add(new(buttons.Count, text, color, textColor, x, y, xDim, yDim, purpose));
     }
 
     public void DrawButtons(SpriteBatch batch, SpriteFont font, Texture2D texture)
@@ -217,6 +221,43 @@ public class ButtonManager
             button.Draw(batch, font, texture);
         }
     }
+
+    public int checkForSelectedButtons(MouseState prevState, MouseState mouse)
+    {
+        int retIndex = -1;
+
+        for (int i = 0; i < buttons.Count; i++)
+        {
+            Button shape = buttons[i];
+            if (shape.Position.Contains(new Point(mouse.X, mouse.Y))){
+                shape.isSelected = true;
+
+                if (mouse.LeftButton == ButtonState.Pressed 
+                    && prevState.LeftButton == ButtonState.Released)
+                {
+                    shape.isClicked = true;
+                } else
+                {
+                    shape.isClicked = false;
+                }
+
+                retIndex = i;
+            }
+            else
+            {
+                shape.isSelected = false;
+                shape.isClicked = false;
+            }
+        }
+
+        return retIndex;
+    }
+
+    public Button getButton(int index)
+    {
+        return buttons[index];
+    }
+
 }
 
 public class Slider
