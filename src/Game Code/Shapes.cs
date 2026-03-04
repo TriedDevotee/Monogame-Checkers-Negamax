@@ -54,9 +54,16 @@ public class Shape
         isSelected = false;
     }
 
-    public void DrawShape(SpriteBatch batch, Color holdColor, bool doHold = false)
+    public void DrawShape(SpriteBatch batch, Color holdColor, bool dontHold = false)
     {
-        batch.Draw(texture, shapeObj, holdColor);
+        if (!dontHold)
+        {
+            batch.Draw(texture, shapeObj, holdColor);
+        }
+        else
+        {
+            batch.Draw(texture, shapeObj, currentColor);
+        }
     }
 }
 
@@ -88,7 +95,15 @@ public class ShapeManager
     {
         foreach (int special in specials)
         {
-            shapes[special].DrawShape(batch, specialColor, true);
+            shapes[special].DrawShape(batch, specialColor);
+        }
+    }
+
+    public void DrawAll(SpriteBatch batch)
+    {
+        foreach (Shape shape in shapes)
+        {
+            shape.DrawShape(batch, Color.White, true);
         }
     }
 
@@ -213,10 +228,10 @@ public class Slider
     Texture2D baseTexture;
     int barLength;
     public float fractionMade {get; private set;}
-    public Slider(Texture2D texture, int xPos, int yPos, int length = 47, int height = 10, int knobDIm = 10)
+    public Slider(Texture2D texture, int xPos, int yPos, int length, int height = 20, int knobDIm = 20)
     {
-        Bar = new Rectangle(xPos, yPos, length, height);
-        Knob = new Rectangle(xPos, yPos, knobDIm, height);
+        Bar = new Rectangle(xPos, yPos, height, length);
+        Knob = new Rectangle(xPos, yPos, height, knobDIm);
 
         barColor = Color.Gray;
         knobColor = Color.DarkGray;
@@ -232,20 +247,19 @@ public class Slider
     {
         if (Bar.Contains(state.Position) && state.LeftButton == ButtonState.Pressed)
         {
-            Knob.X = state.X;
+            Knob.Y = state.Y;
         }
 
-        fractionMade = (float) (Knob.X - Bar.X) / (float)barLength;
-        fractionMade = MathHelper.Clamp(fractionMade, 0f, 1f);
+        fractionMade = (Knob.Y - Bar.Y) / (float)barLength;
     }
 
     public void drawSlider(SpriteBatch batch)
     {
         Rectangle offsetSection = new(
-            Bar.X + barLength,
-            Bar.Y,
+            Bar.X,
+            Bar.Y + barLength,
             Knob.Width,
-            Bar.Height
+            Bar.Width
         );
 
         batch.Draw(baseTexture, Bar, barColor);
@@ -286,9 +300,9 @@ public class SliderColorMaker
             slider.updateSlider(state);
         }
 
-        float red = sliders[0].fractionMade * 255;
-        float green = sliders[1].fractionMade * 255;
-        float blue = sliders[2].fractionMade * 255;
+        float red = sliders[0].fractionMade;
+        float green = sliders[1].fractionMade;
+        float blue = sliders[2].fractionMade;
 
         color = new(red, green, blue);
     }

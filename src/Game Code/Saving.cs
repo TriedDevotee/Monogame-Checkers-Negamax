@@ -13,6 +13,11 @@ public class ColorObject
     public byte g { get; set; }
     public byte b { get; set; }
     public byte a { get; set; }
+
+    public Color GetColor()
+    {
+        return new(r, g, b, a);
+    }
 }
 
 public class GameData

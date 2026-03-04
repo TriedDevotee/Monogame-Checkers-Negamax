@@ -44,8 +44,9 @@ public class Session
     public Dictionary<string, Texture2D> LoadedTextures {get; set;}
     public Dictionary<string, SpriteFont> LoadedFonts {get; set;}
     public ConfigData userConfig;
+    public Color bgColor;
 
-    public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool Color, float H, float W)
+    public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool color, float H, float W)
     {
         Board = newBoard;
         Game = newMain;
@@ -61,12 +62,14 @@ public class Session
         FrameTimerForButtonPushing = 0;
         IndexOfCurrentPosition = 0;
 
-        IsPlayerWhite = Color;
+        IsPlayerWhite = color;
         
         LoadedTextures = new();
         LoadedFonts = new();
 
         userConfig = new();
+
+        bgColor = Color.Black;
     }
 
     public void UpdateMove(moveCache newMove)
@@ -139,7 +142,7 @@ public class Game1 : Game
 
         //currentScreen = new TitleScreen(session, _texture);
 
-        //currentScreen = new OptionsScreen(session, _texture);
+        currentScreen = new OptionsScreen(session, _texture);
 
         base.Initialize();
     }
@@ -213,7 +216,7 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(session.bgColor);
 
         _spriteBatch.Begin();
 

@@ -69,11 +69,7 @@ public class Board
         batch.Draw(baseTexture, boardBack, Color.SlateGray);
 
 
-        Color player1 = new Color(
-            session.userConfig.config.white_player_color.r, 
-            session.userConfig.config.white_player_color.g, 
-            session.userConfig.config.white_player_color.b, 
-            session.userConfig.config.white_player_color.a);
+        Color player1 = session.userConfig.config.white_player_color.GetColor();
 
         Color player2 = new Color(
             session.userConfig.config.black_player_color.r, 

@@ -249,6 +249,14 @@ public class TitleScreen : IMenuScreen
     }   
 }
 
+public enum SliderSetting
+{
+    Player1,
+    Player2,
+    Board1,
+    Board2
+}
+
 public class OptionsScreen : IMenuScreen
 {
     private readonly Session session;
@@ -260,6 +268,7 @@ public class OptionsScreen : IMenuScreen
     ScreenTypes[] connections;
     ScreenTypes parentScreen;
     MouseState state;
+    bool showSliders;
 
 
     public OptionsScreen(Session currentSession, Texture2D _texture)
@@ -270,12 +279,15 @@ public class OptionsScreen : IMenuScreen
         background = new(session, baseTexture);
 
         buttons = SetUpButtons();
+        shapes = SetUpShapes();
 
         connections = getAllConnectedScreens();
         parentScreen = getParentScreen();
 
         state = Mouse.GetState();
-        sliders = new SliderColorMaker(baseTexture, 500, 300, 0, 15, 240);
+        sliders = new SliderColorMaker(baseTexture, (int) (session.Width * 0.8), (int) (session.Height * 0.3), 25, 0, (int) (session.Height * 0.45));
+
+        showSliders = true;
     }
 
     public ScreenTypes[] getAllConnectedScreens()
@@ -290,14 +302,93 @@ public class OptionsScreen : IMenuScreen
 
     public ButtonManager SetUpButtons()
     {
+        int w = (int) session.Width;
+        int h = (int) session.Height;
+
         ButtonManager newButtons = new();
+
+        newButtons.AddButton(
+            "Player 1",
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.15), 
+            (int) (h * 0.3),
+            w / 4, h / 8
+        );
+
+        newButtons.AddButton(
+            "Player 2",
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.15), 
+            (int) (h * 0.45),
+            w / 4, h / 8
+        );
+
+        newButtons.AddButton(
+            "Board 1",
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.15), 
+            (int) (h * 0.6),
+            w / 4, h / 8
+        );
+
+        newButtons.AddButton(
+            "Board 2",
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.15), 
+            (int) (h * 0.75),
+            w / 4, h / 8
+        );
+
+        newButtons.AddButton(
+            "Save Changes",
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.5), 
+            (int) (h * 0.1),
+            w / 4, h / 8
+        );
+
+        newButtons.AddButton(
+            "Back",
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.8), 
+            (int) (h * 0.1),
+            w / 8, h / 8
+        );
         
         return newButtons;
+    }
+
+    public ShapeManager SetUpShapes()
+    {
+        ShapeManager newShapes = new(baseTexture);
+
+        int w = (int) session.Width;
+        int h = (int) session.Height;
+
+        newShapes.AddShapes((int) (w * 0.5) - 10, (int) (h * 0.3) - 10, Color.Gray, (int) (h * 0.575) + 20, (int) (w * 0.125) + 20);
+
+        newShapes.AddShapes((int) (w * 0.5), (int) (h * 0.3), session.userConfig.config.white_player_color.GetColor(), h / 8, w / 8);
+
+        newShapes.AddShapes((int) (w * 0.5), (int) (h * 0.45), session.userConfig.config.black_player_color.GetColor(), h / 8, w / 8);
+
+        newShapes.AddShapes((int) (w * 0.5), (int) (h * 0.6), session.userConfig.config.board_color_1.GetColor(), h / 8, w / 8);
+
+        newShapes.AddShapes((int) (w * 0.5), (int) (h * 0.75), session.userConfig.config.board_color_2.GetColor(), h / 8, w / 8);
+
+        return newShapes;
     }
     
     public void UpdateScreen(GameTime gameTime)
     {
         state = Mouse.GetState();
+        
+        session.bgColor = Color.Gray * 0.2f;
 
         background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -306,33 +397,29 @@ public class OptionsScreen : IMenuScreen
 
     public void DrawScreen(SpriteBatch spriteBatch)
     {
-        background.Draw(spriteBatch);
+        SpriteFont font = session.LoadedFonts["Monocraft"];
+        string title = "OPTIONS";
 
-        //Draws logo
-        Rectangle LogoShape = new(
-            (int) (session.Width * 0.2), 
-            (int) (session.Height * 0.1), 
-            (int) (session.Width * 0.6), 
-            (int) (session.Height * 0.3)
+        Vector2 textSize = font.MeasureString(title);
+        Vector2 origin = textSize / 2f;
+
+        spriteBatch.DrawString(
+            session.LoadedFonts["Monocraft"], 
+            title, 
+            new(session.Width * 0.25f, 
+                session.Height * 0.1f), 
+            Color.White,
+            0f,
+            origin,
+            2f,
+            SpriteEffects.None,
+            0f
         );
 
-        Rectangle EditionShape = new(
-            (int) (session.Width * 0.15),
-            (int) (session.Height * 0.28),
-            (int) (session.Width * 0.7),
-            (int) (session.Height * 0.15)
-        );
+        buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
+        shapes.DrawAll(spriteBatch);
 
-        spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
-        spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
-
-        //buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
-
-        Rectangle colorTest = new(300, 300, 100, 100);
-
-        sliders.drawSliders(spriteBatch);
-
-        spriteBatch.Draw(baseTexture, colorTest, sliders.color);
+        if(showSliders) sliders.drawSliders(spriteBatch);
     }   
 }
 public class SinglePlayerScreen : IMenuScreen
@@ -530,25 +617,8 @@ public class MultiplayerScreen : IMenuScreen
 
     public void DrawScreen(SpriteBatch spriteBatch)
     {
-        background.Draw(spriteBatch);
+        //background.Draw(spriteBatch);
 
-        //Draws logo
-        Rectangle LogoShape = new(
-            (int) (session.Width * 0.2), 
-            (int) (session.Height * 0.1), 
-            (int) (session.Width * 0.6), 
-            (int) (session.Height * 0.3)
-        );
-
-        Rectangle EditionShape = new(
-            (int) (session.Width * 0.15),
-            (int) (session.Height * 0.28),
-            (int) (session.Width * 0.7),
-            (int) (session.Height * 0.15)
-        );
-
-        spriteBatch.Draw(session.LoadedTextures["LogoImage"], LogoShape, Color.White);
-        spriteBatch.Draw(session.LoadedTextures["EditionImage"], EditionShape, Color.White);
 
         buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
     }   
