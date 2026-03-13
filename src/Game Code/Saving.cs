@@ -95,6 +95,8 @@ public class ConfigData
     {
         string json = JsonSerializer.Serialize(newConfig);
         File.WriteAllText(configPath, json);
+
+        config = LoadConfig();
     }
 
     public GameData useDefaultData()

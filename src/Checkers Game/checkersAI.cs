@@ -11,11 +11,11 @@ namespace Checkers
         private readonly bool whiteTurn;
         public moveData BestMove {get; private set;}
 
-        private const int depthLimit = 7;
+        private int depthLimit;
         private const int losingScore = 1000000000;
         private const float mobilityWeighting = 0.1f; 
 
-        public NegamaxHandler(Bitboard whitePieces, Bitboard blackPieces, Bitboard kings, bool turn)
+        public NegamaxHandler(Bitboard whitePieces, Bitboard blackPieces, Bitboard kings, bool turn, int depth)
         {
             Position gamePos = new Position(
                 whitePieces.board,
@@ -26,6 +26,8 @@ namespace Checkers
             whiteTurn = turn;
 
             BestMove = GetBestMove(gamePos, whiteTurn);
+
+            depthLimit = depth;
         }
 
         /// <summary>

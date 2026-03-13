@@ -38,7 +38,7 @@ public class Session
     public float Width {get; private set;}
     public float Height {get; private set;}
     public bool ValidClickChecker {get; set;}
-    public bool IsPlayerWhite {get;}
+    public bool IsPlayerWhite {get; set;}
     public int FrameTimerForButtonPushing {get; set;}
     public int IndexOfCurrentPosition {get; set;}
     public Dictionary<string, Texture2D> LoadedTextures {get; set;}
@@ -106,6 +106,9 @@ public class Game1 : Game
 
     Session session; 
     ScreenManager screens;
+    bool EscKeyLastFrame;
+    bool EscKeyThisFrame;
+
 
     public Game1()
     {
@@ -136,10 +139,13 @@ public class Game1 : Game
             session.Game.moves.Kings.board
         ));
 
-        screens = new(session, _texture, ScreenTypes.Options);
+        screens = new(session, _texture);
 
         session.IndexOfCurrentPosition++;
         session.UpdatePosition(session.Game.previousPositions.Last());
+
+        EscKeyLastFrame = Keyboard.GetState().IsKeyDown(Keys.Escape);
+        EscKeyThisFrame = Keyboard.GetState().IsKeyDown(Keys.Escape);
         
         base.Initialize();
     }
@@ -165,8 +171,16 @@ public class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
+        EscKeyLastFrame = EscKeyThisFrame;
+        EscKeyThisFrame = Keyboard.GetState().IsKeyDown(Keys.Escape);
+        if (EscKeyThisFrame && !EscKeyLastFrame)
+        {
+            if (screens.currScreen.getParentScreen() != ScreenTypes.None)
+            {
+                screens.currScreenType = screens.currScreen.getParentScreen();
+                screens.UpdateScreenManager();
+            }
+        }
 
         if (session.doExit)
         {

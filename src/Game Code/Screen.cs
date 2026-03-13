@@ -27,14 +27,19 @@ public interface IScreen
 {
     public abstract void UpdateScreen(GameTime gameTime);
     public abstract void DrawScreen(SpriteBatch spriteBatch);
+    public abstract ScreenTypes getParentScreen();
 }
 
 public interface IMenuScreen : IScreen
 {
     protected abstract ButtonManager SetUpButtons();
     protected abstract ScreenTypes[] getAllConnectedScreens();
-    protected abstract ScreenTypes getParentScreen();
     protected abstract void RunForButtons();
+}
+public enum PlayerType
+{
+    Bot,
+    Human
 }
 
 public class GameScreen : IScreen
@@ -45,8 +50,12 @@ public class GameScreen : IScreen
     private bool leftClicked;
     private MouseState previousMouseState;
     private ScreenManager screens;
+    private PlayerType player1;
+    private PlayerType player2;
+    private bool doBoardFlip;
+    private bool runFlipping;
 
-    public GameScreen(Session currentSession, Texture2D texture, ScreenManager manager)
+    public GameScreen(Session currentSession, Texture2D texture, ScreenManager manager, PlayerType P1, PlayerType P2)
     {
         session = currentSession;
         _texture = texture;
@@ -57,6 +66,21 @@ public class GameScreen : IScreen
         session.SetState(GameState.MoveInput);
 
         screens = manager;
+
+        player1 = P1;
+        player2 = P2;
+
+        doBoardFlip = false;
+
+        if (P1 == P2 && P1 == PlayerType.Human)
+        {
+            runFlipping = true;
+        }
+    }
+
+    public ScreenTypes getParentScreen()
+    {
+        return ScreenTypes.Title;
     }
 
     public void UpdateScreen(GameTime gameTime)
@@ -76,36 +100,38 @@ public class GameScreen : IScreen
         session.Back.AddParticles();
         session.Back.updateParticles(dt);
 
-        if (session.Game.moves.WhiteTurn)
-        {
-            if (session.state == GameState.MoveInput)
-            {
-                if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
-                    moveCache inpMove = new(63-session.PlayedMove.start, 63-session.PlayedMove.moveTo);
+        PlayerType currPlayer = session.Game.moves.WhiteTurn ? player1 : player2;
 
-                    bool movePlayed = session.Game.MakeHumanMove(inpMove);
+        if (currPlayer == PlayerType.Human)
+        { 
+            session.IsPlayerWhite = session.Game.moves.WhiteTurn;
+            if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
+                moveCache inpMove = new(63-session.PlayedMove.start, 63-session.PlayedMove.moveTo);
 
-                    if (movePlayed){
-                        session.SetState(GameState.MoveResolved);
-                        session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
-                    }
+                bool movePlayed = session.Game.MakeHumanMove(inpMove);
 
-                    if (session.state == GameState.MoveResolved && !session.Game.waitingForBranchInput)
+                if (movePlayed){
+                    session.SetState(GameState.MoveResolved);
+                    session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
+                }
+
+                if (session.state == GameState.MoveResolved && !session.Game.waitingForBranchInput)
+                {
+                    session.SetState(GameState.BotMoving);
+                    UpdatePositionLog();
+
+                    if (runFlipping)
                     {
-                        session.SetState(GameState.BotMoving);
-                        UpdatePositionLog();
+                        doBoardFlip = !doBoardFlip;
                     }
                 }
             }
         }
         else
         {
-            if (session.state == GameState.BotMoving)
-            {
-                session.Game.runForAI(session.Game.moves);
-                session.SetState(GameState.MoveInput);
-                UpdatePositionLog();
-            }
+            session.Game.runForAI(session.Game.moves);
+            session.SetState(GameState.MoveInput);
+            UpdatePositionLog();
         }
 
         
@@ -123,7 +149,8 @@ public class GameScreen : IScreen
             baseTexture: _texture, 
             session: session,
             previousMouseState,
-            mouseState
+            mouseState,
+            doBoardFlip
         );
     }
 
@@ -312,11 +339,21 @@ public enum ButtonFunctions
     Board1Color,
     Board2Color,
     SaveChanges,
-    GoBack  
+    GoBack,
+    ChangeDifficulty
+}
+
+public enum BotDifficulty
+{
+    Easy,
+    Medium,
+    Hard
 }
 
 public class OptionsScreen : IMenuScreen
 {
+
+    private Dictionary<BotDifficulty, string> BotDiffString;
     private readonly Session session;
     private MenuBackground background;
     private Texture2D baseTexture;
@@ -328,6 +365,7 @@ public class OptionsScreen : IMenuScreen
     MouseState prevState;
     MouseState state;
     ScreenManager screens;
+    BotDifficulty difficulty;
     bool showSliders;
 
     int indexColorBeingSet;
@@ -335,6 +373,8 @@ public class OptionsScreen : IMenuScreen
 
     public OptionsScreen(Session currentSession, Texture2D _texture, ScreenManager screenManager)
     {
+        fillDiffDictionary();
+
         baseTexture = _texture;
 
         session = currentSession;
@@ -355,6 +395,16 @@ public class OptionsScreen : IMenuScreen
 
         indexColorBeingSet = -1;
         screens = screenManager;
+
+        difficulty = BotDifficulty.Easy;
+    }
+
+    private void fillDiffDictionary()
+    {
+        BotDiffString = new();
+        BotDiffString.Add(BotDifficulty.Easy, "Easy");
+        BotDiffString.Add(BotDifficulty.Medium, "Medium");
+        BotDiffString.Add(BotDifficulty.Hard, "Hard");
     }
 
     public ScreenTypes[] getAllConnectedScreens()
@@ -432,6 +482,17 @@ public class OptionsScreen : IMenuScreen
             (int) (h * 0.1),
             w / 8, h / 8,
             ButtonFunctions.GoBack
+        );
+
+        newButtons.AddButton(
+            "Bot difficulty: " + BotDiffString[difficulty],
+            Color.Gray,
+            Color.White,
+            (int) (w * 0.7),
+            (int) (h * 0.85),
+            w / 4, h / 8,
+            ButtonFunctions.ChangeDifficulty,
+            scale: 0.8f
         );
         
         return newButtons;
@@ -539,6 +600,14 @@ public class OptionsScreen : IMenuScreen
                     screens.currScreenType = parentScreen;
                     screens.UpdateScreenManager();
                 }
+                else if (function == ButtonFunctions.ChangeDifficulty)
+                {
+                    if (difficulty == BotDifficulty.Easy)
+                    {
+                        difficulty = BotDifficulty.Medium;
+                        
+                    }
+                }
             }
         }
 
@@ -582,9 +651,6 @@ public class ScreenManager
     Dictionary<ScreenTypes, IScreen> Screens;
     public ScreenTypes currScreenType;
     public IScreen currScreen;
-    ScreenTypes[] currScreenConnections;
-    ScreenTypes PreviousScreen;
-
     public ScreenManager(Session currSession, Texture2D texture, ScreenTypes initialScreen = ScreenTypes.Title)
     {
         session = currSession;
@@ -600,7 +666,7 @@ public class ScreenManager
     {
         Dictionary<ScreenTypes, IScreen> screens = new();
 
-        screens.Add(ScreenTypes.Game, new GameScreen(session, basetexture, this));
+        screens.Add(ScreenTypes.Game, new GameScreen(session, basetexture, this, PlayerType.Human, PlayerType.Human));
         screens.Add(ScreenTypes.Title, new TitleScreen(session, basetexture, this));
         screens.Add(ScreenTypes.Options, new OptionsScreen(session, basetexture, this));
         //screens.Add(ScreenTypes.SinglePlayer, new SinglePlayerScreen(session, basetexture));

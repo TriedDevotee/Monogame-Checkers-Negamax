@@ -3,20 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 
-public struct shapeColor
-{
-    public float red;
-    public float green;
-    public float blue;
-
-    public shapeColor(float r = 255.0f, float g = 255.0f, float b = 255.0f)
-    {
-        red = r;
-        green = g;
-        blue = b;
-    }
-}
-
+//WHY DO YOU EVEN EXIST???
 public struct ShapeBound
 {
     public int startX;
@@ -159,7 +146,9 @@ public class Button
     public bool isSelected;
     public bool isClicked;
 
-    public Button(int ID, string BC, Color Color, Color tColor, int x, int y, int xDim, int yDim, ButtonFunctions func)
+    private float scale;
+
+    public Button(int ID, string BC, Color Color, Color tColor, int x, int y, int xDim, int yDim, ButtonFunctions func, float buttonScale = 1.25f)
     {
         buttonID = ID;
         ButtonContent = BC;
@@ -170,6 +159,8 @@ public class Button
         bounding = new(x, y, x + xDim, y + yDim);
 
         purpose = func;
+        
+        scale = buttonScale;
     }
 
     public void Draw(SpriteBatch batch, SpriteFont font, Texture2D texture)
@@ -195,8 +186,8 @@ public class Button
         batch.Draw(texture, backDrop, Color.Black * 0.8f);
         batch.Draw(texture, Position, color);
 
-        if (doShadow) batch.DrawString(font, ButtonContent, shadowPos, Color.Black * 0.25f, rotation: 0, origin, 1.25f, SpriteEffects.None, 0);
-        batch.DrawString(font, ButtonContent, textPos, textColor, rotation: 0, origin, 1.25f, SpriteEffects.None, 0);
+        if (doShadow) batch.DrawString(font, ButtonContent, shadowPos, Color.Black * 0.25f, rotation: 0, origin, scale, SpriteEffects.None, 0);
+        batch.DrawString(font, ButtonContent, textPos, textColor, rotation: 0, origin, scale, SpriteEffects.None, 0);
     }
 }
 
@@ -209,9 +200,9 @@ public class ButtonManager
         buttons = new();
     }
 
-    public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim, ButtonFunctions purpose)
+    public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim, ButtonFunctions purpose, float scale = 1.25f)
     {
-        buttons.Add(new(buttons.Count, text, color, textColor, x, y, xDim, yDim, purpose));
+        buttons.Add(new(buttons.Count, text, color, textColor, x, y, xDim, yDim, purpose, scale));
     }
 
     public void DrawButtons(SpriteBatch batch, SpriteFont font, Texture2D texture)
