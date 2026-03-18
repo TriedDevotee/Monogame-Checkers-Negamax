@@ -1,19 +1,7 @@
-public struct userMove
-{
-    int startSquare;
-    int moveSquare;
-
-    public userMove(int start, int move)
-    {
-        startSquare = start;
-        moveSquare = move;
-    }
-}
-
 public class moveCache
 {
-    public int start;
-    public int moveTo;
+    public int start {get; private set;}
+    public int moveTo {get; private set;}
     int indexFilling;
 
     public moveCache(int s = -1, int m = -1)

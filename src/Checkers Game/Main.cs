@@ -250,7 +250,7 @@ namespace Checkers
         }
         public void runForAI(Moves moves)
         {
-            NegamaxHandler negamax = new NegamaxHandler(moves.WhitePieces, moves.BlackPieces, moves.Kings, moves.WhiteTurn);
+            NegamaxHandler negamax = new NegamaxHandler(moves.WhitePieces, moves.BlackPieces, moves.Kings, moves.WhiteTurn, 11);
 
             moveData bestMove = negamax.BestMove;
 

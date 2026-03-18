@@ -29,25 +29,26 @@ public enum GameState
 
 public class Session
 {
-    public Board Board {get;}
-    public Main Game {get;}
-    public GameBackground Back {get;}
+    public Board Board {get; private set;}
+    public Main Game {get; private set;}
+    public GameBackground Back {get; private set;}
     public moveCache PlayedMove {get; private set;}
     public Position CurrentPosition {get; private set;}
     public GameState state {get; private set;}
     public float Width {get; private set;}
     public float Height {get; private set;}
-    public bool ValidClickChecker {get; set;}
-    public bool IsPlayerWhite {get; set;}
-    public int FrameTimerForButtonPushing {get; set;}
-    public int IndexOfCurrentPosition {get; set;}
-    public Dictionary<string, Texture2D> LoadedTextures {get; set;}
-    public Dictionary<string, SpriteFont> LoadedFonts {get; set;}
+    public bool ValidClickChecker;
+    public bool IsPlayerWhite;
+    public int FrameTimerForButtonPushing;
+    public int IndexOfCurrentPosition;
+    public Dictionary<string, Texture2D> LoadedTextures;
+    public Dictionary<string, SpriteFont> LoadedFonts;
     public ConfigData userConfig;
     public Color bgColor;
     public bool doExit;
+    private Texture2D baseTexture;
 
-    public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool color, float H, float W)
+    public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool color, float H, float W, Texture2D _texture)
     {
         Board = newBoard;
         Game = newMain;
@@ -72,6 +73,8 @@ public class Session
 
         bgColor = Color.Black;
         doExit = false;
+
+        baseTexture = _texture;
     }
 
     public void UpdateMove(moveCache newMove)
@@ -92,6 +95,16 @@ public class Session
     public void SetState(GameState newState)
     {
         state = newState;
+    }
+
+    public void ResetGame()
+    {
+        Board = new Board(baseTexture, x: (int) (Width / 2) - 200, y: (int) (Height / 2) - 200);
+        Game = new Main();
+
+        PlayedMove = new moveCache();
+        ValidClickChecker = true;
+        Game.previousPositions.Clear();
     }
 }
 
@@ -131,7 +144,7 @@ public class Game1 : Game
         moveCache playedMove = new(-1, -1);
         Position initialMove = new();
 
-        session = new(newBoard, newGame, back, playedMove, initialMove, true, height, width);
+        session = new(newBoard, newGame, back, playedMove, initialMove, true, height, width, _texture);
 
         session.Game.previousPositions.Add(new Position(
             session.Game.moves.WhitePieces.board, 

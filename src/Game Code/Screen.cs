@@ -19,7 +19,7 @@ public enum ScreenTypes
     Game,
     Title,
     SinglePlayer,
-    Multiplayer,
+    MultiplayerGame,
     Options,
 }
 
@@ -202,7 +202,7 @@ public class TitleScreen : IMenuScreen
 
     public ScreenTypes[] getAllConnectedScreens()
     {
-        return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.Multiplayer];
+        return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.MultiplayerGame];
     }
 
     public ScreenTypes getParentScreen()
@@ -320,6 +320,11 @@ public class TitleScreen : IMenuScreen
                 else if (function == ButtonFunctions.SinglePlayerMenu)
                 {
                     screens.currScreenType = ScreenTypes.Game;
+                    screens.UpdateScreenManager();
+                }
+                else if (function == ButtonFunctions.MultiplayerMenu)
+                {
+                    screens.currScreenType = ScreenTypes.MultiplayerGame;
                     screens.UpdateScreenManager();
                 }
             }
@@ -666,17 +671,22 @@ public class ScreenManager
     {
         Dictionary<ScreenTypes, IScreen> screens = new();
 
-        screens.Add(ScreenTypes.Game, new GameScreen(session, basetexture, this, PlayerType.Human, PlayerType.Human));
+        screens.Add(ScreenTypes.Game, new GameScreen(session, basetexture, this, PlayerType.Human, PlayerType.Bot));
         screens.Add(ScreenTypes.Title, new TitleScreen(session, basetexture, this));
         screens.Add(ScreenTypes.Options, new OptionsScreen(session, basetexture, this));
-        //screens.Add(ScreenTypes.SinglePlayer, new SinglePlayerScreen(session, basetexture));
-        //screens.Add(ScreenTypes.Multiplayer, new MultiplayerScreen(session, basetexture));
-
+        screens.Add(ScreenTypes.MultiplayerGame, new GameScreen(session, basetexture, this, PlayerType.Human, PlayerType.Human));
         return screens;
     }
 
     public void UpdateScreenManager()
     {
-        currScreen = Screens[currScreenType];
+        if (currScreenType == ScreenTypes.Game || currScreenType == ScreenTypes.MultiplayerGame)
+        {
+            session.ResetGame();
+
+            PlayerType p2 = currScreenType == ScreenTypes.Game ? PlayerType.Bot : PlayerType.Human;
+            currScreen = new GameScreen(session, basetexture, this, PlayerType.Human, p2);
+        }
+        else currScreen = Screens[currScreenType];
     }
 }
