@@ -24,10 +24,9 @@ namespace Checkers
             );
 
             whiteTurn = turn;
+            depthLimit = depth;
 
             BestMove = GetBestMove(gamePos, whiteTurn);
-
-            depthLimit = depth;
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace Checkers
         private float Negamax(int depth, Position board, bool whiteTurn, float alpha, float beta)
         {
             if (depth == 0) return evaluation(board, whiteTurn);
-            if (board.isGameOver()) return whiteTurn? losingScore : -losingScore;
+            if (board.isGameOver()) return -losingScore;
 
             Moves moves = new Moves(whiteTurn);
             moves.SetUpPosition(board.whitePieces.board, board.blackPieces.board, board.kings.board);
@@ -151,7 +150,7 @@ namespace Checkers
 
                 newPos.makePositionalMove(move, whiteTurn);
 
-                float score = -Negamax(depth: depthLimit, newPos, !whiteTurn, int.MinValue + 1.0f, int.MaxValue);
+                float score = -Negamax(depth: depthLimit, newPos, !whiteTurn, float.NegativeInfinity, float.PositiveInfinity);
 
                 if (score > bestScore)
                 {

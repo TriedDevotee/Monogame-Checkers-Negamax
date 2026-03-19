@@ -5,12 +5,14 @@
   <Config />
   <SourceFiles>
     <File>d:/Coding/Comp Sci NEA/Content/EditionImage.png</File>
+    <File>d:/Coding/Comp Sci NEA/Content/GameOver.png</File>
     <File>d:/Coding/Comp Sci NEA/Content/LogoImage.png</File>
     <File>d:/Coding/Comp Sci NEA/Content/menuButton.png</File>
     <File>d:/Coding/Comp Sci NEA/Content/Monocraft.spritefont</File>
     <File>d:/Coding/Comp Sci NEA/Content/Papyrus.spritefont</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />
     <File xsi:nil="true" />

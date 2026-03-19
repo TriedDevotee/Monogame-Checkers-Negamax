@@ -8,6 +8,9 @@ using Comp_Sci_NEA;
 
 namespace Checkers
 {   
+    /// <summary>
+    /// Main game class. Handles all the backend engineering. Uses 2 main methods - RunForAI() and makeHumanMove()
+    /// </summary>
     public class Main
     {
         public Moves moves;
@@ -15,8 +18,9 @@ namespace Checkers
         public bool waitingForBranchInput;
         public List<Position> previousPositions;
         public Piece[][] displayBoard;
+        private int Depth;
 
-        public Main()
+        public Main(int depth)
         {
             moves = new Moves(true);
             wasLastMoveValid = true;
@@ -28,8 +32,15 @@ namespace Checkers
             {
                 displayBoard[i] = new Piece[8];
             }
+
+            Depth = depth;
         }
 
+        /// <summary>
+        /// Takes the current game position, or one that is inputted, 
+        /// and organises it into a neat 2D array that allows the frontend to see the game in a good format.
+        /// </summary>
+        /// <param name="posToDisplay"></param>
         public void displayPosition(Position posToDisplay)
         {
             int boardHeight = 8;
@@ -71,6 +82,12 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Takes a move, and finds its position in an array of moves.
+        /// </summary>
+        /// <param name="moveCode"></param>
+        /// <param name="moves"></param>
+        /// <returns></returns>
         public int searchInMoves(moveData moveCode, moveData[] moves)
         {
             for (int i = 0; i < moves.Length; i++)
@@ -83,10 +100,17 @@ namespace Checkers
             return -1;
         }
 
-        
+        /// <summary>
+        /// Main move making class. Takes in the 3 main BitBoards, and makes the move using the inputted move code by modifying the BitBoards.
+        /// </summary>
+        /// <param name="pieces"></param>
+        /// <param name="enemies"></param>
+        /// <param name="kings"></param>
+        /// <param name="move"></param>
+        /// <param name="whiteTurn"></param>
+        /// <returns></returns>
         public bitboardWrapper moveMaker(Bitboard pieces, Bitboard enemies, Bitboard kings, moveData move, bool whiteTurn)
         {
-            //Console.WriteLine($"Making move {move.start} to {move.moveTo} taking {move.captureSquare}");
 
             pieces.clearSquare(move.start);
             pieces.setSquare(move.moveTo);
@@ -99,8 +123,6 @@ namespace Checkers
 
             if (move.moveTo / 8 == 7 || move.moveTo / 8 == 0)
             {
-                //Console.WriteLine($"Made a new King at {move.moveTo}");
-
                 kings.setSquare(move.moveTo);
             }
 
@@ -119,6 +141,11 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Function that makes the players move, assuming they are human. Takes in the move, evaluates if it is legal and makes it bitboard wise
+        /// </summary>
+        /// <param name="inputMove"></param>
+        /// <returns></returns>
         public bool MakeHumanMove(moveCache inputMove)
         {
             moveData[] allPossibleMoves = moves.GetAllMoves();
@@ -163,6 +190,11 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Evaluates the chained captures available in a position
+        /// </summary>
+        /// <param name="currentPosition"></param>
+        /// <param name="actualMove"></param>
         public void ChainedCaptures(Position currentPosition, moveData actualMove)
         {
             ChainTree chains = new ChainTree(currentPosition, moves.WhiteTurn);
@@ -182,11 +214,8 @@ namespace Checkers
 
             List<moveData> chosenPath = buildPathingTree(allPaths);
 
-            //Console.WriteLine($"Number of moves to make: {chosenPath.Count}");
-
             for (int i = 0; i < chosenPath.Count; i++)
             {
-                //Console.WriteLine($"Applying move {chosenPath[i].start} to {chosenPath[i].moveTo}");
 
                 bitboardWrapper wrapper;
 
@@ -201,10 +230,16 @@ namespace Checkers
 
         }
 
+        /// <summary>
+        /// Chained captures pathing tree generator
+        /// </summary>
+        /// <param name="Paths"></param>
+        /// <param name="isBot"></param>
+        /// <param name="depthRemaining"></param>
+        /// <param name="whiteTurn"></param>
+        /// <returns></returns>
         public List<moveData> buildPathingTree(List<List<ChainNode>> Paths, bool isBot = false, int depthRemaining = 0, bool whiteTurn = true)
         {
-            //Console.WriteLine($"Pathing function called.");
-
             int generation = 0;
             bool remainingNodes = true;
 
@@ -248,9 +283,14 @@ namespace Checkers
 
             return finalPath;
         }
+
+        /// <summary>
+        /// Runs AI moves. Takes in Move class and produces an AI move. It then handles the making of this move using MoveMaker()
+        /// </summary>
+        /// <param name="moves"></param>
         public void runForAI(Moves moves)
         {
-            NegamaxHandler negamax = new NegamaxHandler(moves.WhitePieces, moves.BlackPieces, moves.Kings, moves.WhiteTurn, 11);
+            NegamaxHandler negamax = new NegamaxHandler(moves.WhitePieces, moves.BlackPieces, moves.Kings, moves.WhiteTurn, Depth);
 
             moveData bestMove = negamax.BestMove;
 
@@ -283,6 +323,12 @@ namespace Checkers
             moves.ToggleTurn();
         }
 
+        /// <summary>
+        /// Navigates the chained captures tree. 
+        /// Takes in the start node, and produces a sequence of all available trees in the position, allowing for the user to select a path
+        /// </summary>
+        /// <param name="startPoint"></param>
+        /// <returns></returns>
         static List<List<ChainNode>> chainTraverser(ChainNode startPoint)
         {
             List<List<ChainNode>> completedPaths = [];
@@ -315,6 +361,12 @@ namespace Checkers
             return completedPaths;
         }
 
+        /// <summary>
+        /// Helper method that allows for deep cloing a List of ChainNodes
+        /// </summary>
+        /// <param name="cloning"></param>
+        /// <param name="maxIndex"></param>
+        /// <returns></returns>
         static List<ChainNode> deepClone(List<ChainNode> cloning, int maxIndex)
         {
             List<ChainNode> cloned = [];
@@ -327,13 +379,16 @@ namespace Checkers
             return cloned;
         }
 
+        /// <summary>
+        /// Uses move data to produce a result based on the games state. Uses the following codes:
+        /// <br/> - 0 - No Game Over
+        /// <br/> - 1 - P1 wins
+        /// <br/> - 2 - P2 wins
+        /// <br/> - 3 - Draw (no moves available, but not win/lose)
+        /// </summary>
+        /// <returns></returns>
         public int checkForGameOver()
         {
-            // 0 - No gameOver
-            // 1 - White Wins
-            // 2 - Black Wins
-            // 3 - Draw
-
             static int countPieces(ulong board)
             {
                 int numPieces = 0;

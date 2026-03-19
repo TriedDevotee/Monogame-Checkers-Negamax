@@ -13,6 +13,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.ComponentModel;
+using System.Data;
 
 namespace Comp_Sci_NEA;
 
@@ -47,6 +48,8 @@ public class Session
     public Color bgColor;
     public bool doExit;
     private Texture2D baseTexture;
+    public int gameDepth;
+    public GameOverState gameOverState;
 
     public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool color, float H, float W, Texture2D _texture)
     {
@@ -75,6 +78,9 @@ public class Session
         doExit = false;
 
         baseTexture = _texture;
+        gameDepth = 7;
+
+        gameOverState = GameOverState.None;
     }
 
     public void UpdateMove(moveCache newMove)
@@ -100,9 +106,15 @@ public class Session
     public void ResetGame()
     {
         Board = new Board(baseTexture, x: (int) (Width / 2) - 200, y: (int) (Height / 2) - 200);
-        Game = new Main();
+        Game = new Main(gameDepth);
 
         PlayedMove = new moveCache();
+        CurrentPosition = new Position(
+            Game.moves.WhitePieces.board, 
+            Game.moves.BlackPieces.board, 
+            Game.moves.Kings.board
+        );
+
         ValidClickChecker = true;
         Game.previousPositions.Clear();
     }
@@ -139,7 +151,7 @@ public class Game1 : Game
         height = _graphics.PreferredBackBufferHeight;
 
         Board newBoard = new(_texture, x: (int) (width / 2) - 200, y: (int) (height / 2) - 200);
-        Main newGame = new();
+        Main newGame = new(7);
         GameBackground back = new(newBoard.position.X + newBoard.width / 4.0f, newBoard.position.Y + newBoard.height / 4.0f, _texture, width, height);
         moveCache playedMove = new(-1, -1);
         Position initialMove = new();
@@ -159,6 +171,9 @@ public class Game1 : Game
 
         EscKeyLastFrame = Keyboard.GetState().IsKeyDown(Keys.Escape);
         EscKeyThisFrame = Keyboard.GetState().IsKeyDown(Keys.Escape);
+
+        screens.currScreenType = ScreenTypes.GameOver;
+        screens.UpdateScreenManager();
         
         base.Initialize();
     }
@@ -169,11 +184,13 @@ public class Game1 : Game
 
         Texture2D LogoImage = Content.Load<Texture2D>("LogoImage");
         Texture2D EditionImage = Content.Load<Texture2D>("EditionImage");
-        Texture2D MenuButton=  Content.Load<Texture2D>("menuButton");
+        Texture2D MenuButton =  Content.Load<Texture2D>("menuButton");
+        Texture2D GameOver = Content.Load<Texture2D>("GameOver");
 
         session.LoadedTextures.Add("LogoImage", LogoImage);
         session.LoadedTextures.Add("EditionImage", EditionImage);
         session.LoadedTextures.Add("MenuButton", MenuButton);
+        session.LoadedTextures.Add("GameOver", GameOver);
 
         SpriteFont MonoCraft = Content.LoadLocalized<SpriteFont>("Monocraft");
 

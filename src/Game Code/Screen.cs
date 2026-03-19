@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System;
 using System.Globalization;
+using System.Threading;
 
 public enum ScreenTypes
 {
@@ -21,6 +22,16 @@ public enum ScreenTypes
     SinglePlayer,
     MultiplayerGame,
     Options,
+    GameOver
+}
+
+public enum GameOverState
+{
+    None,
+    Player1Win,
+    Player2Win,
+    BotWin,
+    Draw
 }
 
 public interface IScreen
@@ -137,7 +148,34 @@ public class GameScreen : IScreen
         
 
         int isGameOver = session.Game.checkForGameOver();
-        if (isGameOver == 1 || isGameOver == 2 || isGameOver == 3) session.SetState(GameState.GameOver);
+        if (isGameOver == 1)
+        {
+            if (player1 == PlayerType.Human){
+                session.gameOverState = GameOverState.Player1Win;
+            }
+            else
+            {
+                session.gameOverState = GameOverState.BotWin;
+            }
+        } else if (isGameOver == 2)
+        {
+            if (player2 == PlayerType.Human){
+                session.gameOverState = GameOverState.Player2Win;
+            }
+            else
+            {
+                session.gameOverState = GameOverState.BotWin;
+            }
+        } else if (isGameOver == 3)
+        {
+            session.gameOverState = GameOverState.Draw;
+        }
+
+        if (isGameOver != 0)
+        {
+            screens.currScreenType = ScreenTypes.GameOver;
+            screens.UpdateScreenManager();
+        }
     }
 
     public void DrawScreen(SpriteBatch _spriteBatch)
@@ -609,9 +647,34 @@ public class OptionsScreen : IMenuScreen
                 {
                     if (difficulty == BotDifficulty.Easy)
                     {
-                        difficulty = BotDifficulty.Medium;
-                        
+                        difficulty = BotDifficulty.Medium;         
+                    } 
+                    else if (difficulty == BotDifficulty.Medium)
+                    {
+                        difficulty = BotDifficulty.Hard;
                     }
+                    else
+                    {
+                        difficulty = BotDifficulty.Easy;
+                    }
+
+                    buttons.AddButton(
+                        "Bot difficulty: " + BotDiffString[difficulty],
+                        Color.Gray,
+                        Color.White,
+                        (int) (session.Width * 0.7),
+                        (int) (session.Height * 0.85),
+                        (int) session.Width / 4, (int) session.Height / 8,
+                        ButtonFunctions.ChangeDifficulty,
+                        scale: 0.8f
+                    );
+
+                    int depth = difficulty == BotDifficulty.Easy ? 7 : 9;
+                    depth = difficulty == BotDifficulty.Medium ? 9 : 11;
+
+                    session.gameDepth = depth;
+
+                    session.ResetGame();
                 }
             }
         }
@@ -649,6 +712,157 @@ public class OptionsScreen : IMenuScreen
         if(showSliders) sliders.drawSliders(spriteBatch);
     }   
 }
+
+public class EndScreen : IMenuScreen
+{
+    private readonly Session session;
+    private MenuBackground background;
+    private Texture2D baseTexture;
+    private ButtonManager buttons;
+    ScreenTypes[] connections;
+    ScreenTypes parentScreen;
+    ScreenManager screens;
+    MouseState prevState;
+    MouseState state;
+
+    public EndScreen(Session currentSession, Texture2D _texture, ScreenManager screenManager)
+    {
+        baseTexture = _texture;
+
+        session = currentSession;
+        screens = screenManager;
+        background = new(session, baseTexture);
+
+        buttons = SetUpButtons();
+
+        connections = getAllConnectedScreens();
+        parentScreen = getParentScreen();
+
+
+        prevState = Mouse.GetState();
+        state = Mouse.GetState();
+
+        background = new(session, baseTexture);
+    }
+    public void DrawScreen(SpriteBatch spriteBatch)
+    {
+        buttons = SetUpButtons();
+
+        background.Draw(spriteBatch);
+
+        Rectangle EndLogoShape = new(
+            (int) (session.Width * 0.15), 
+            (int) (session.Height * 0.1), 
+            (int) (session.Width * 0.7), 
+            (int) (session.Height * 0.3)
+        );
+
+        Texture2D endLogo = session.LoadedTextures["GameOver"];
+
+        spriteBatch.Draw(endLogo, EndLogoShape, Color.White);
+
+        SpriteFont buttonFont = session.LoadedFonts["Monocraft"];
+        buttons.DrawButtons(spriteBatch, buttonFont, baseTexture);
+    }
+
+    public ScreenTypes[] getAllConnectedScreens()
+    {
+        return [];
+    }
+
+    public ScreenTypes getParentScreen()
+    {
+        return ScreenTypes.Title;
+    }
+
+    public void RunForButtons()
+    {
+        int selectedButton = buttons.checkForSelectedButtons(prevState, state);
+
+        if (selectedButton != -1)
+        {
+            Button button = buttons.getButton(selectedButton);
+
+            if (button.isClicked)
+            {
+                ButtonFunctions function = button.purpose;
+        
+
+                if (function == ButtonFunctions.GoBack)
+                {
+                    screens.currScreenType = parentScreen;
+                    screens.UpdateScreenManager();
+                }
+            }
+        }
+    }
+
+    public ButtonManager SetUpButtons()
+    {
+        string statusMessage = GetGameStatus();
+
+        ButtonManager manager = new();
+        manager.AddButton(
+            "Go Home",
+            Color.Gray,
+            Color.White,
+            (int) (session.Width * 0.25), 
+            (int) (session.Height * 0.7),
+            (int) (session.Width * 0.5), (int) (session.Height * 0.1),
+            ButtonFunctions.GoBack
+        );
+
+        manager.AddButton(
+            statusMessage,
+            Color.Gray,
+            Color.White,
+            (int) (session.Width * 0.25), 
+            (int) (session.Height * 0.5),
+            (int) (session.Width * 0.5), (int) (session.Height * 0.1),
+            ButtonFunctions.None
+        );
+
+        return manager;
+    }
+
+    private string GetGameStatus()
+    {
+        GameOverState state = session.gameOverState;
+
+        if (state == GameOverState.None)
+        {
+            screens.currScreenType = ScreenTypes.Title;
+            screens.UpdateScreenManager();
+            return string.Empty;
+        } 
+        else if (state == GameOverState.Player1Win)
+        {
+            return "Player 1 wins!";
+        }
+        else if (state == GameOverState.Player2Win)
+        {
+            return "Player 2 wins!";
+        }
+        else if (state == GameOverState.BotWin)
+        {
+            return "AI wins!";
+        } 
+        else
+        {
+            return "Draw!";
+        }
+    }
+
+    public void UpdateScreen(GameTime gameTime)
+    {
+        prevState = state;
+        state = Mouse.GetState();
+
+        background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
+
+        RunForButtons();
+    }
+}
 public class ScreenManager
 {
     Session session;
@@ -675,6 +889,7 @@ public class ScreenManager
         screens.Add(ScreenTypes.Title, new TitleScreen(session, basetexture, this));
         screens.Add(ScreenTypes.Options, new OptionsScreen(session, basetexture, this));
         screens.Add(ScreenTypes.MultiplayerGame, new GameScreen(session, basetexture, this, PlayerType.Human, PlayerType.Human));
+        screens.Add(ScreenTypes.GameOver, new EndScreen(session, basetexture, this));
         return screens;
     }
 
@@ -687,6 +902,17 @@ public class ScreenManager
             PlayerType p2 = currScreenType == ScreenTypes.Game ? PlayerType.Bot : PlayerType.Human;
             currScreen = new GameScreen(session, basetexture, this, PlayerType.Human, p2);
         }
-        else currScreen = Screens[currScreenType];
+        else if (currScreenType == ScreenTypes.Title)
+        {
+            currScreen = new TitleScreen(session, basetexture, this);
+        }
+        else if (currScreenType == ScreenTypes.Options)
+        {
+            currScreen = new OptionsScreen(session, basetexture, this);
+        }
+        else if (currScreenType == ScreenTypes.GameOver)
+        {
+            currScreen = new EndScreen(session, basetexture, this);
+        }
     }
 }
