@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 namespace Checkers
 {
+    /// <summary>
+    /// Class that stores all the possible moves from each square, sorted by color and capture
+    /// </summary>
     public class PieceMasks
     {
         public Dictionary<int, int[]> WhiteMasks = new Dictionary<int, int[]>()

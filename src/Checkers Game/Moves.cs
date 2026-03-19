@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Checkers
 {
+    /// <summary>
+    /// Main move handler and board storage class. Stores the BitBoards, and handles all possible moves.
+    /// </summary>
     public class Moves
     {
         public Bitboard WhitePieces { get; private set; }
@@ -29,6 +32,12 @@ namespace Checkers
             WhiteTurn = turn;
         }
 
+        /// <summary>
+        /// Basic method that takes in a set of ulongs, and translates them into BitBoards, which are stored in the class implementation
+        /// </summary>
+        /// <param name="white"></param>
+        /// <param name="black"></param>
+        /// <param name="k"></param>
         public void SetUpPosition(ulong white, ulong black, ulong k)
         {
             WhitePieces = new Bitboard(white);
@@ -36,6 +45,10 @@ namespace Checkers
             Kings = new Bitboard(k);
         }
 
+        /// <summary>
+        /// Method that returns all possible moves in a position. Also does capture filtering, by only looking for moves if no captures are found
+        /// </summary>
+        /// <returns></returns>
         public moveData[] GetAllMoves()
         {
             moveData[] captures = GetCaptures();
@@ -47,12 +60,12 @@ namespace Checkers
             return captures;
         }
 
-        public moveData[] GetChainedCaptures(int startSquare)
-        {
-
-            return GetCaptures(startSquare, startSquare+1);
-        }
-
+        /// <summary>
+        /// Finds all the captures in a position. Can be filtered by indices on what to search for
+        /// </summary>
+        /// <param name="firstIndex"></param>
+        /// <param name="lastIndex"></param>
+        /// <returns></returns>
         public moveData[] GetCaptures(int firstIndex = 0, int lastIndex = 64)
         {
 
@@ -122,6 +135,10 @@ namespace Checkers
             return moves.ToArray();
         }
 
+        /// <summary>
+        /// Finds all non-capture moves in a position
+        /// </summary>
+        /// <returns></returns>
         public moveData[] GetNormalMoves()
         {
             Bitboard currentKings;
@@ -183,6 +200,10 @@ namespace Checkers
             return moves.ToArray();
         }
 
+        /// <summary>
+        /// Returns the combined white and black Bitboards in a new Bitboard
+        /// </summary>
+        /// <returns></returns>
         public Bitboard GetAllPieces()
         {
             AllPieces = new Bitboard(WhitePieces.board | BlackPieces.board);
@@ -190,6 +211,9 @@ namespace Checkers
             return AllPieces;
         }
 
+        /// <summary>
+        /// Toggles the variable which tracks whose turn it is (locally stored in class implementation)
+        /// </summary>
         public void ToggleTurn()
         {
             WhiteTurn = !WhiteTurn;
