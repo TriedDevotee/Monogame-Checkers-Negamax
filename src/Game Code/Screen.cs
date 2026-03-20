@@ -115,7 +115,7 @@ public class GameScreen : IScreen
 
         if (currPlayer == PlayerType.Human)
         { 
-            session.IsPlayerWhite = session.Game.moves.WhiteTurn;
+            session.setPlayerColor(session.Game.moves.WhiteTurn);
             if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
                 moveCache inpMove = new(63-session.PlayedMove.start, 63-session.PlayedMove.moveTo);
 
@@ -566,7 +566,7 @@ public class OptionsScreen : IMenuScreen
         prevState = state;
         state = Mouse.GetState();
         
-        session.bgColor = Color.Gray * 0.2f;
+        session.setBgColor(Color.Gray * 0.2f);
 
         background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -672,7 +672,7 @@ public class OptionsScreen : IMenuScreen
                     int depth = difficulty == BotDifficulty.Easy ? 7 : 9;
                     depth = difficulty == BotDifficulty.Medium ? 9 : 11;
 
-                    session.gameDepth = depth;
+                    session.setDepth(depth);
 
                     session.ResetGame();
                 }

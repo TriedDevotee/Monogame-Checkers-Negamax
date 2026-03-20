@@ -1,22 +1,17 @@
 ﻿using System;
-using System.IO;
-using System.Xml;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-
 using Checkers;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Audio;
-using System.Runtime.Serialization;
 using System.Linq;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.ComponentModel;
-using System.Data;
 
 namespace Comp_Sci_NEA;
 
+/// <summary>
+/// Handles the state that the game exists within at any present moment. 
+/// This is mostly used to ensure the input pipeline is functioning correctly
+/// </summary>
 public enum GameState
 {
     InMenu,
@@ -28,6 +23,11 @@ public enum GameState
     BrowsingPastPositions,
 }
 
+/// <summary>
+/// Stores all major attributes used in the front end. 
+/// This includes the board, backend and position links which are used to coordinate the input pipeline
+/// Supports a dependency injection framework
+/// </summary>
 public class Session
 {
     public Board Board {get; private set;}
@@ -39,16 +39,16 @@ public class Session
     public float Width {get; private set;}
     public float Height {get; private set;}
     public bool ValidClickChecker;
-    public bool IsPlayerWhite;
+    public bool IsPlayerWhite {get; private set;}
     public int FrameTimerForButtonPushing;
     public int IndexOfCurrentPosition;
-    public Dictionary<string, Texture2D> LoadedTextures;
-    public Dictionary<string, SpriteFont> LoadedFonts;
-    public ConfigData userConfig;
-    public Color bgColor;
+    public Dictionary<string, Texture2D> LoadedTextures {get; private set;}
+    public Dictionary<string, SpriteFont> LoadedFonts {get; private set;}
+    public ConfigData userConfig {get; private set;}
+    public Color bgColor {get; private set;}
     public bool doExit;
     private Texture2D baseTexture;
-    public int gameDepth;
+    public int gameDepth {get; private set;}
     public GameOverState gameOverState;
 
     public Session(Board newBoard, Main newMain, GameBackground newBack, moveCache newMove, Position newPos, bool color, float H, float W, Texture2D _texture)
@@ -88,21 +88,49 @@ public class Session
         PlayedMove = newMove;
     }
 
+    /// <summary>
+    /// Adds to the played move structure the input square. 
+    /// This is coordinated within PlayedMove to ensure that the correct value is stored in the correct location
+    /// </summary>
+    /// <param name="square"></param>
     public void AddToMove(int square)
     {
         PlayedMove.SetValue(square);
     }
 
+    /// <summary>
+    /// Changes current position into inputted one
+    /// </summary>
+    /// <param name="newPos"></param>
     public void UpdatePosition(Position newPos)
     {
         CurrentPosition = newPos;
     }
 
+    /// <summary>
+    /// Assigns new state to the GameState structure
+    /// </summary>
+    /// <param name="newState"></param>
     public void SetState(GameState newState)
     {
         state = newState;
     }
 
+    public void setBgColor(Color color)
+    {
+        bgColor = color;
+    }
+
+    public void setDepth(int depth)
+    {
+        gameDepth = depth;
+    }
+
+    /// <summary>
+    /// Instantiates new board and game structures. This means the game is completely reset. 
+    /// Additinally, wipes all previous positions and resets other values, like PlayedMove, 
+    /// and the position, which is set to a default one to prevent board corruption
+    /// </summary>
     public void ResetGame()
     {
         Board = new Board(baseTexture, x: (int) (Width / 2) - 200, y: (int) (Height / 2) - 200);
@@ -118,8 +146,21 @@ public class Session
         ValidClickChecker = true;
         Game.previousPositions.Clear();
     }
+
+    /// <summary>
+    /// Toggles the player color with the value of true if white (player1) or false if black (player2)
+    /// </summary>
+    /// <param name="inColor"></param>
+    public void setPlayerColor(bool inColor)
+    {
+        IsPlayerWhite = inColor;
+    }
 }
 
+/// <summary>
+/// Instamtiated by framework. Runs main game loop. 
+/// All update and draw is handled here
+/// </summary>
 public class Game1 : Game
 {
     private GraphicsDeviceManager _graphics;
@@ -142,6 +183,10 @@ public class Game1 : Game
         IsMouseVisible = true;
     }
 
+    /// <summary>
+    /// Assigns all base values of the main class.
+    /// Notably, instantiates session, with all the necessary values, and the screen manager, which handles all screenwise rendering
+    /// </summary>
     protected override void Initialize()
     {
         _texture = new Texture2D(GraphicsDevice, 1, 1);
@@ -178,6 +223,10 @@ public class Game1 : Game
         base.Initialize();
     }
 
+    /// <summary>
+    /// Loads all necessary content from content.mgcb
+    /// Stores it in dictionaries stored in session to allow for retrieval anywhere in the program
+    /// </summary>
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
@@ -199,6 +248,11 @@ public class Game1 : Game
         Viewport viewport = _graphics.GraphicsDevice.Viewport;
     }
 
+    /// <summary>
+    /// Main update point. 
+    /// Updates the screen and handles all keyboard input, such as game quitting and viewing previous positions
+    /// </summary>
+    /// <param name="gameTime"></param>
     protected override void Update(GameTime gameTime)
     {
         EscKeyLastFrame = EscKeyThisFrame;
@@ -260,6 +314,10 @@ public class Game1 : Game
         base.Update(gameTime);
     }
 
+    /// <summary>
+    /// Draws the current screen, and assigns the background color
+    /// </summary>
+    /// <param name="gameTime"></param>
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(session.bgColor);

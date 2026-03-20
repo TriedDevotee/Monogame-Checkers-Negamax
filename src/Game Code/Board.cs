@@ -11,6 +11,10 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 namespace Comp_Sci_NEA;
+
+/// <summary>
+/// Frontend board management class. Handles board rendering and interfacing with the backend
+/// </summary>
 public class Board
 {
     public int heightNum;
@@ -43,6 +47,9 @@ public class Board
         selectedShapeIndex = -1;
     }
 
+    /// <summary>
+    /// Fills every index of the board to avoid uninstantiation issues
+    /// </summary>
     private void PopulateCheckersBoard()
     {
         bool whiteColor = false;
@@ -66,7 +73,16 @@ public class Board
         }
     }
 
-
+    /// <summary>
+    /// Draws board. Also handles inputs and color allocation from user config. 
+    /// Additionally utilises flipBoard, a boolean value that causes piece transpositions when true
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="baseTexture"></param>
+    /// <param name="session"></param>
+    /// <param name="prevState"></param>
+    /// <param name="state"></param>
+    /// <param name="flipBoard"></param>
     public void DrawBoard(SpriteBatch batch, Texture2D baseTexture, Session session, MouseState prevState, MouseState state, bool flipBoard)
     {
         Rectangle boardBack = new Rectangle((int) position.X - 5, (int) position.Y - 5, width + 10, height + 10);
@@ -143,6 +159,15 @@ public class Board
 
     }
 
+    /// <summary>
+    /// Draws the pieces on the board, purely a simple colored rectangle
+    /// </summary>
+    /// <param name="currShape"></param>
+    /// <param name="currentPiece"></param>
+    /// <param name="batch"></param>
+    /// <param name="baseTexture"></param>
+    /// <param name="player1"></param>
+    /// <param name="player2"></param>
     private void DrawPieces(Shape currShape, Piece currentPiece, SpriteBatch batch, Texture2D baseTexture, Color player1, Color player2)
     {
 
@@ -159,6 +184,13 @@ public class Board
         if(currentPiece.isFull) batch.Draw(baseTexture, pieceDims, usingColor);
     }
 
+    /// <summary>
+    /// Draws the squares that make up the board. 
+    /// Doesn't handle any specializations other than the base square colors
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="board1"></param>
+    /// <param name="board2"></param>
     private void DrawGameBoard(SpriteBatch batch, Color board1, Color board2)
     {
         shapes.DrawShapes(batch, board1);
@@ -178,6 +210,13 @@ public class Board
         shapes.DrawSpecials(batch, blackIndices.ToArray(), board2);
     }
 
+    /// <summary>
+    /// Handles all the boardwise input handling. Implements input flipping in case of flipBoard
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="prevState"></param>
+    /// <param name="state"></param>
+    /// <param name="flipBoard"></param>
     private void HandleClicks(Session session, MouseState prevState, MouseState state, bool flipBoard)
     {
         selectedShapeIndex = shapes.checkForSelectedShapes(prevState, state);
