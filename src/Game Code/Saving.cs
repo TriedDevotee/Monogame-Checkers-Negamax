@@ -7,6 +7,10 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Microsoft.Xna.Framework;
 
+/// <summary>
+/// Stores all the colors parsed from the .json. 
+/// Each color is stored as a byte
+/// </summary>
 public class ColorObject
 {
     public byte r { get; set; }
@@ -24,12 +28,20 @@ public class ColorObject
         a = (byte) alpha;
     }
 
+    /// <summary>
+    /// Returns a new color which is constructed with the values of the stored colors
+    /// </summary>
+    /// <returns></returns>
     public Color GetColor()
     {
         return new(r, g, b, a);
     }
 }
 
+/// <summary>
+/// Stores each piece of data parsed from the config.json file.
+/// Note: Camel case is used to ensure the variables match with the ones in the .json
+/// </summary>
 public class GameData
 {
     public ColorObject white_player_color { get; set; }
@@ -50,6 +62,9 @@ public class GameData
     }
 }
 
+/// <summary>
+/// Stores all the loading and saving methods to do with editting the .json
+/// </summary>
 public class ConfigData
 {
     public GameData config;
@@ -62,11 +77,21 @@ public class ConfigData
         config = LoadConfig();
     }
 
+    /// <summary>
+    /// Used to ensure that colors are loaded in the current instance of the application
+    /// </summary>
     public void updateConfig()
     {
         config = LoadConfig();
     }
 
+    /// <summary>
+    /// Attempts to load the .json file. Starts by checking if the file exists, and if not, uses the deault data provided.
+    /// Assuming the file is found, it tries to serialize the information within it.
+    /// If that fails, the default values are used, and then those are written to the file (to prevent future issues).
+    /// Otherwise, the file is serialized, and the values are used.
+    /// </summary>
+    /// <returns></returns>
     private GameData LoadConfig()
     {
 
@@ -91,6 +116,10 @@ public class ConfigData
         }
     }
 
+    /// <summary>
+    /// Saves to the file
+    /// </summary>
+    /// <param name="newConfig"></param>
     public void SaveConfig(GameData newConfig)
     {
         string json = JsonSerializer.Serialize(newConfig);
@@ -99,6 +128,14 @@ public class ConfigData
         config = LoadConfig();
     }
 
+    /// <summary>
+    /// Stores default data. Colors resemble the following:<br/>
+    ///  - Player1 = Pink <br/>
+    ///  - Player2 = Purple <br/>
+    ///  - Board1 = White<br/>
+    ///  - Board2 = Black
+    /// </summary>
+    /// <returns></returns>
     public GameData useDefaultData()
     {
         return new GameData(

@@ -1,19 +1,16 @@
-using System.ComponentModel;
 using Comp_Sci_NEA;
-
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 using Checkers;
 using System.Linq;
 using Microsoft.Xna.Framework.Input;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System;
-using System.Globalization;
-using System.Threading;
 
+/// <summary>
+/// Stores all the available screen types.
+/// Note: There is a None type which has no associated screen. 
+/// There is safeguards in place to prevent issues with that.
+/// </summary>
 public enum ScreenTypes
 {
     None,
@@ -25,6 +22,11 @@ public enum ScreenTypes
     GameOver
 }
 
+/// <summary>
+/// Details all the different ways the game can end for the end game pipeline.
+/// Note: None is ran when there is no game over.
+/// Stored in Session.
+/// </summary>
 public enum GameOverState
 {
     None,
@@ -34,6 +36,9 @@ public enum GameOverState
     Draw
 }
 
+/// <summary>
+/// Base screen interface. Templates for Updating, Drawing and producing the screen's Parent
+/// </summary>
 public interface IScreen
 {
     public abstract void UpdateScreen(GameTime gameTime);
@@ -41,18 +46,32 @@ public interface IScreen
     public abstract ScreenTypes getParentScreen();
 }
 
+/// <summary>
+/// Specified for Menu based screens with buttons.
+/// Ensures all the button logic is present.
+/// </summary>
 public interface IMenuScreen : IScreen
 {
     protected abstract ButtonManager SetUpButtons();
     protected abstract ScreenTypes[] getAllConnectedScreens();
     protected abstract void RunForButtons();
 }
+
+/// <summary>
+/// Works out if a player is a human or AI.
+/// Designed to be expandable.
+/// </summary>
 public enum PlayerType
 {
     Bot,
     Human
 }
 
+/// <summary>
+/// Handles all game logic behind the rendering, input and interfacing with the backend. 
+/// Uitlised twice in a singleplayer and multiplayer instance.
+/// Tracks player types to distinguish this, and edits the rendering due to this matter.
+/// </summary>
 public class GameScreen : IScreen
 {
     private Session session;
@@ -89,11 +108,22 @@ public class GameScreen : IScreen
         }
     }
 
+    /// <summary>
+    /// Hardcoded to Title screen. 
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes getParentScreen()
     {
         return ScreenTypes.Title;
     }
 
+    /// <summary>
+    /// Updates all the necessary components. 
+    /// Updates the mouse states, followed by the board, calculates all the moves form either the payer or the bot.
+    /// Also inverts the flip variable to ensure the board flips correctly (in multiplayer game).
+    /// Finally backs up the position in the position log.
+    /// </summary>
+    /// <param name="gameTime"></param>
     public void UpdateScreen(GameTime gameTime)
     {
         previousMouseState = mouseState;
@@ -178,6 +208,12 @@ public class GameScreen : IScreen
         }
     }
 
+    /// <summary>
+    /// Draws the screen and all associated UI components.
+    /// Draws the background, board amnd pieces.
+    /// This is where all the Draw() methods are called.
+    /// </summary>
+    /// <param name="_spriteBatch"></param>
     public void DrawScreen(SpriteBatch _spriteBatch)
     {
         session.Back.drawParticles(_spriteBatch, _texture);
@@ -192,6 +228,9 @@ public class GameScreen : IScreen
         );
     }
 
+    /// <summary>
+    /// Helper method to ensure the positions are added to the log easily
+    /// </summary>
     private void UpdatePositionLog()
     {
        session.Game.previousPositions.Add(
@@ -208,6 +247,10 @@ public class GameScreen : IScreen
     }  
 }
 
+/// <summary>
+/// Title screen class. This is what is used as the parent for most classes, 
+/// and also is the entry point to the application.
+/// </summary>
 public class TitleScreen : IMenuScreen
 {
     private readonly Session session;
@@ -238,16 +281,32 @@ public class TitleScreen : IMenuScreen
         state = Mouse.GetState();
     }
 
+    /// <summary>
+    /// Returns all connected screens. Unused (unnecessary)
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes[] getAllConnectedScreens()
     {
         return [ScreenTypes.Options, ScreenTypes.SinglePlayer, ScreenTypes.MultiplayerGame];
     }
 
+    /// <summary>
+    /// Returns the parent. Note: Here parent is None. This is accounted for in Game1
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes getParentScreen()
     {
         return ScreenTypes.None;
     }
 
+    /// <summary>
+    /// Assigns the values to all of the buttons which exist within the screen. These include:<br/>
+    ///  - Single player button<br/>
+    ///  - Multiplayer button<br/>
+    ///  - Options button<br/>
+    ///  - Quit button<br/>
+    /// </summary>
+    /// <returns></returns>
     public ButtonManager SetUpButtons()
     {
         ButtonManager newButtons = new();
@@ -299,6 +358,10 @@ public class TitleScreen : IMenuScreen
         return newButtons;
     }
     
+    /// <summary>
+    /// Updates all of the buttons, modifies the internal mouse state and updates the background
+    /// </summary>
+    /// <param name="gameTime"></param>
     public void UpdateScreen(GameTime gameTime)
     {
         background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
@@ -309,6 +372,11 @@ public class TitleScreen : IMenuScreen
         RunForButtons();
     }
 
+    /// <summary>
+    /// Draws the UI components. This is all the UI buttons, the logos and the background. 
+    /// Additionally, this is the only method that handles the texture loading within the object.
+    /// </summary>
+    /// <param name="spriteBatch"></param>
     public void DrawScreen(SpriteBatch spriteBatch)
     {
         background.Draw(spriteBatch);
@@ -334,6 +402,10 @@ public class TitleScreen : IMenuScreen
         buttons.DrawButtons(spriteBatch, session.LoadedFonts["Monocraft"], baseTexture);
     }   
 
+    /// <summary>
+    /// Allows for all the button's functionalities. #
+    /// These run in an else if statement.
+    /// </summary>
     public void RunForButtons()
     {
         int selectedButton = buttons.checkForSelectedButtons(prevState, state);
@@ -370,6 +442,12 @@ public class TitleScreen : IMenuScreen
     }
 }
 
+/// <summary>
+/// Details all the functions of the buttons. 
+/// The main use of this is to prevent "magic" values being thrown around :D.
+/// Note: None means null function. 
+/// This is used purely as a placeholder as implementing methods will never implement None.
+/// </summary>
 public enum ButtonFunctions
 {
     None,
@@ -386,6 +464,10 @@ public enum ButtonFunctions
     ChangeDifficulty
 }
 
+/// <summary>
+/// Enum that determines the bot's difficulty. 
+/// Again, used purely to avoid the existance of "magic" numbers
+/// </summary>
 public enum BotDifficulty
 {
     Easy,
@@ -393,6 +475,12 @@ public enum BotDifficulty
     Hard
 }
 
+/// <summary>
+/// Implementation of the IMenuScreen interface.
+/// Used to update and render the options UI, which is used to change values about the game.
+/// These are the piece colors, board colors and the difficulty of the bot.
+/// Note: Only the color changes are backed up to the config.json file
+/// </summary>
 public class OptionsScreen : IMenuScreen
 {
 
@@ -410,10 +498,7 @@ public class OptionsScreen : IMenuScreen
     ScreenManager screens;
     BotDifficulty difficulty;
     bool showSliders;
-
     int indexColorBeingSet;
-
-
     public OptionsScreen(Session currentSession, Texture2D _texture, ScreenManager screenManager)
     {
         fillDiffDictionary();
@@ -442,6 +527,9 @@ public class OptionsScreen : IMenuScreen
         difficulty = BotDifficulty.Easy;
     }
 
+    /// <summary>
+    /// Sets up the difficulties dictionary with the enumeration and the associated string, ready for rendering the button.
+    /// </summary>
     private void fillDiffDictionary()
     {
         BotDiffString = new();
@@ -450,16 +538,35 @@ public class OptionsScreen : IMenuScreen
         BotDiffString.Add(BotDifficulty.Hard, "Hard");
     }
 
+    /// <summary>
+    /// Unused method.
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes[] getAllConnectedScreens()
     {
         return [ScreenTypes.None];
     }
 
+    /// <summary>
+    /// Returns ScreenTypes.Title to allow for the game to seek back to the Title when certain conditions are met.
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes getParentScreen()
     {
         return ScreenTypes.Title;
     }
 
+    /// <summary>
+    /// Assign all of the buttons to the ButtonManager. This includes:<br/> 
+    ///  - Player1 button<br/> 
+    ///  - Player2 button<br/> 
+    ///  - Board1 button<br/> 
+    ///  - Board2 button<br/> 
+    ///  - Difficulty button<br/> 
+    ///  - Save Changes button<br/> 
+    ///  - Back button<br/> 
+    /// </summary>
+    /// <returns></returns>
     public ButtonManager SetUpButtons()
     {
         int w = (int) session.Width;
@@ -541,6 +648,12 @@ public class OptionsScreen : IMenuScreen
         return newButtons;
     }
 
+    /// <summary>
+    /// Assigns all the necessary shapes to the ShapeManager object.
+    /// These will be the colors that demo the pieces new selected color.
+    /// Additionally, I added the background for these colors here.
+    /// </summary>
+    /// <returns></returns>
     public ShapeManager SetUpShapes()
     {
         ShapeManager newShapes = new(baseTexture);
@@ -561,6 +674,12 @@ public class OptionsScreen : IMenuScreen
         return newShapes;
     }
     
+    /// <summary>
+    /// Runs all necessary updates.
+    /// This includes updating the mouse state, setting the background color, 
+    /// updating the GameBackground, updating the sliders and running button functions.
+    /// </summary>
+    /// <param name="gameTime"></param>
     public void UpdateScreen(GameTime gameTime)
     {
         prevState = state;
@@ -570,11 +689,23 @@ public class OptionsScreen : IMenuScreen
 
         background.update((float) gameTime.ElapsedGameTime.TotalSeconds);
 
-        sliders.updateSliders(state);
+        if (showSliders){
+            sliders.updateSliders(state);
+        }
 
         RunForButtons();
     }
 
+    /// <summary>
+    /// Runs all button functions from the selected buttons in the ButtonManager. 
+    /// Stored in an if-else statement.
+    /// Note: this is where indexColorBeingSet is used, to determine which index of the shapeManager class is having the color set.
+    /// This is a fragile system, that relies on not tampering with the setup of the shapes. 
+    /// In future, modify to use some determiner, probably with an enum.
+    /// Note 2: To allow for the button's text to change with difficulty, I add a new button to the list. 
+    /// May be more efficient to pop, but that runs a risk of losing key components. 
+    /// Slight memory leak though if button is pushed too many times (its a lot though)
+    /// </summary>
     public void RunForButtons()
     {
         int selectedButton = buttons.checkForSelectedButtons(prevState, state);
@@ -679,12 +810,18 @@ public class OptionsScreen : IMenuScreen
             }
         }
 
+        //Toggles on and off when a color setting button is pressed.
         if (showSliders)
         {
             shapes.getSelectedShapes(indexColorBeingSet).currentColor = sliders.color;
         }
     }
 
+    /// <summary>
+    /// Draws all necessary UI components. 
+    /// This includes the screen title, all the buttons, all the shapes and if the sliders are visible, them too
+    /// </summary>
+    /// <param name="spriteBatch"></param>
     public void DrawScreen(SpriteBatch spriteBatch)
     {
         SpriteFont font = session.LoadedFonts["Monocraft"];
@@ -713,6 +850,9 @@ public class OptionsScreen : IMenuScreen
     }   
 }
 
+/// <summary>
+/// Screen that is displayed at the end of the game.
+/// </summary>
 public class EndScreen : IMenuScreen
 {
     private readonly Session session;
@@ -744,6 +884,13 @@ public class EndScreen : IMenuScreen
 
         background = new(session, baseTexture);
     }
+
+    /// <summary> 
+    /// Draws all the necessary UI components, 
+    /// such as the buttons (which are set up here (allows for local modifying)),
+    /// and the end logo
+    /// </summary>
+    /// <param name="spriteBatch"></param>
     public void DrawScreen(SpriteBatch spriteBatch)
     {
         buttons = SetUpButtons();
@@ -765,16 +912,28 @@ public class EndScreen : IMenuScreen
         buttons.DrawButtons(spriteBatch, buttonFont, baseTexture);
     }
 
+    /// <summary>
+    /// Unused method
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes[] getAllConnectedScreens()
     {
         return [];
     }
 
+    /// <summary>
+    /// Returns ScreenTypes.Title, so the program knows where to backtrack too
+    /// </summary>
+    /// <returns></returns>
     public ScreenTypes getParentScreen()
     {
         return ScreenTypes.Title;
     }
 
+    /// <summary>
+    /// Runs all the functions of the buttons. 
+    /// In this case, that is exclusively to go back to the title screen.
+    /// </summary>
     public void RunForButtons()
     {
         int selectedButton = buttons.checkForSelectedButtons(prevState, state);
@@ -797,6 +956,11 @@ public class EndScreen : IMenuScreen
         }
     }
 
+    /// <summary>
+    /// Assigns all the buttons to the ButtonManager object.
+    /// This is a button that returns to the title screen, and one that does nothing (but has the result text).
+    /// </summary>
+    /// <returns></returns>
     public ButtonManager SetUpButtons()
     {
         string statusMessage = GetGameStatus();
@@ -825,6 +989,12 @@ public class EndScreen : IMenuScreen
         return manager;
     }
 
+    /// <summary>
+    /// Returns the result of the game as a result of the GameOverState, stored in Session.
+    /// Note: Has a safeguard in place where if the screen was switched too soon and the state is None, 
+    /// it returns to the title (and returns an empty string)
+    /// </summary>
+    /// <returns></returns>
     private string GetGameStatus()
     {
         GameOverState state = session.gameOverState;
@@ -853,6 +1023,11 @@ public class EndScreen : IMenuScreen
         }
     }
 
+    /// <summary>
+    /// Runs all the necessary updates. 
+    /// This just does button functions, updates mouse movements and updates the background.
+    /// </summary>
+    /// <param name="gameTime"></param>
     public void UpdateScreen(GameTime gameTime)
     {
         prevState = state;
@@ -863,6 +1038,11 @@ public class EndScreen : IMenuScreen
         RunForButtons();
     }
 }
+
+/// <summary>
+/// Manager class for the screen system. 
+/// Tracks the current screen and the type of screen it is.
+/// </summary>
 public class ScreenManager
 {
     Session session;
@@ -881,6 +1061,11 @@ public class ScreenManager
         currScreen = Screens[currScreenType];
     }
 
+    /// <summary>
+    /// Gives a screen to each screenType. 
+    /// Mostly used in debugging, but also used in instantiation, when no screens are defined yet.
+    /// </summary>
+    /// <returns></returns>
     private Dictionary<ScreenTypes, IScreen> CollectScreenTypes()
     {
         Dictionary<ScreenTypes, IScreen> screens = new();
@@ -893,6 +1078,9 @@ public class ScreenManager
         return screens;
     }
 
+    /// <summary>
+    /// Takes the current screen type (which is often set externally) and updates the current screen to match that. 
+    /// </summary>
     public void UpdateScreenManager()
     {
         if (currScreenType == ScreenTypes.Game || currScreenType == ScreenTypes.MultiplayerGame)

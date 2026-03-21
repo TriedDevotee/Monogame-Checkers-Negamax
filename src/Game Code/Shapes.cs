@@ -4,6 +4,10 @@ using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
 
 //WHY DO YOU EVEN EXIST???
+/// <summary>
+/// Details the outer bounds of the shape. 
+/// Not really sure why its still used (mostly for debugging purposes)
+/// </summary>
 public struct ShapeBound
 {
     public int startX;
@@ -20,6 +24,10 @@ public struct ShapeBound
     }
 }
 
+/// <summary>
+/// Basic shape class that allows me to render things like the board or basic shapes elsewhere.
+/// Has no text or function.
+/// </summary>
 public class Shape
 {
     public Texture2D texture;
@@ -41,6 +49,15 @@ public class Shape
         isSelected = false;
     }
 
+    /// <summary>
+    /// Draws the shape.
+    /// If the dontHold var is fakse, it "holds", using the inputted holdColor.
+    /// Otherwise, it uses the color assigned at instantiation.
+    /// This has some uses.
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="holdColor"></param>
+    /// <param name="dontHold"></param>
     public void DrawShape(SpriteBatch batch, Color holdColor, bool dontHold = false)
     {
         if (!dontHold)
@@ -54,6 +71,10 @@ public class Shape
     }
 }
 
+/// <summary>
+/// Manages all the shapes. 
+/// This means it stores them all, and handles all their rendering and updating.
+/// </summary>
 public class ShapeManager
 {
     private List<Shape> shapes;
@@ -65,11 +86,25 @@ public class ShapeManager
         shapes = new();
     }
 
+    /// <summary>
+    /// Creates a new shape. 
+    /// Takes in its x and y positions, its dimensions and its instantiation color.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="color"></param>
+    /// <param name="xDim"></param>
+    /// <param name="yDim"></param>
     public void AddShapes(int x, int y, Color color, int xDim, int yDim)
     {
         shapes.Add(new(baseTexture, x, y, color, shapes.Count, yDim, xDim));
     }
 
+    /// <summary>
+    /// Draws all the shapes with the inputted color.
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="color"></param>
     public void DrawShapes(SpriteBatch batch, Color color)
     {
         foreach (Shape shape in shapes)
@@ -78,6 +113,14 @@ public class ShapeManager
         }
     }
 
+    /// <summary>
+    /// Only draws shapes that correlate with the given indices.
+    /// Probably should have some error checking (but that would slow it down).
+    /// Plus the UI prevents errors from ocurring.
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="specials"></param>
+    /// <param name="specialColor"></param>
     public void DrawSpecials(SpriteBatch batch, int[] specials, Color specialColor)
     {
         foreach (int special in specials)
@@ -86,6 +129,10 @@ public class ShapeManager
         }
     }
 
+    /// <summary>
+    /// Draws all the shapes with the colors they were given at instantiation.
+    /// </summary>
+    /// <param name="batch"></param>
     public void DrawAll(SpriteBatch batch)
     {
         foreach (Shape shape in shapes)
@@ -94,6 +141,12 @@ public class ShapeManager
         }
     }
 
+    /// <summary>
+    /// Returns the index of a selected shape, if any. Also makes it clicked if it is clicked.
+    /// </summary>
+    /// <param name="prevState"></param>
+    /// <param name="mouse"></param>
+    /// <returns></returns>
     public int checkForSelectedShapes(MouseState prevState, MouseState mouse)
     {
         int retIndex = -1;
@@ -125,12 +178,20 @@ public class ShapeManager
         return retIndex;
     }
 
+    /// <summary>
+    /// Returns the shape that correlates with the index given.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
     public Shape getSelectedShapes(int index)
     {
         return shapes[index];
     }
 }
 
+/// <summary>
+/// Button UI element. Like the shape, but has text and a purpose.
+/// </summary>
 public class Button
 {
     public int buttonID {get; private set;}
@@ -163,6 +224,13 @@ public class Button
         scale = buttonScale;
     }
 
+    /// <summary>
+    /// Draws the button. 
+    /// Always draws it with its instantiated color and inputted font.
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="font"></param>
+    /// <param name="texture"></param>
     public void Draw(SpriteBatch batch, SpriteFont font, Texture2D texture)
     {
         Vector2 textSize = font.MeasureString(ButtonContent);
@@ -191,6 +259,10 @@ public class Button
     }
 }
 
+/// <summary>
+/// Manager class for the Button class.
+/// Stores them all and updates and draws them.
+/// </summary>
 public class ButtonManager
 {
     List<Button> buttons;
@@ -200,11 +272,38 @@ public class ButtonManager
         buttons = new();
     }
 
+    /// <summary>
+    /// Adds a new button. Takes in a lot of parameters - 
+    /// Text that is written on the button.
+    /// The color of the button.
+    /// The color of the text on the button.
+    /// The x position of the button.
+    /// The y position of the button.
+    /// The x dimension of the button.
+    /// The y dimension of the button.
+    /// The purpose of the button.
+    /// The scale of the text on the button.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="color"></param>
+    /// <param name="textColor"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="xDim"></param>
+    /// <param name="yDim"></param>
+    /// <param name="purpose"></param>
+    /// <param name="scale"></param>
     public void AddButton(string text, Color color, Color textColor, int x, int y, int xDim, int yDim, ButtonFunctions purpose, float scale = 1.25f)
     {
         buttons.Add(new(buttons.Count, text, color, textColor, x, y, xDim, yDim, purpose, scale));
     }
 
+    /// <summary>
+    /// Draws all the buttons.
+    /// </summary>
+    /// <param name="batch"></param>
+    /// <param name="font"></param>
+    /// <param name="texture"></param>
     public void DrawButtons(SpriteBatch batch, SpriteFont font, Texture2D texture)
     {
         foreach (Button button in buttons)
@@ -213,6 +312,13 @@ public class ButtonManager
         }
     }
 
+    /// <summary>
+    /// Returns the index of the selected button. 
+    /// Also makes it clicked it mouse is clicked :D
+    /// </summary>
+    /// <param name="prevState"></param>
+    /// <param name="mouse"></param>
+    /// <returns></returns>
     public int checkForSelectedButtons(MouseState prevState, MouseState mouse)
     {
         int retIndex = -1;
@@ -244,6 +350,11 @@ public class ButtonManager
         return retIndex;
     }
 
+    /// <summary>
+    /// Returns the button correlating with the provided index.
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
     public Button getButton(int index)
     {
         return buttons[index];
@@ -251,6 +362,11 @@ public class ButtonManager
 
 }
 
+/// <summary>
+/// UI component that renders a scale which can be modified by the user, and tracks its percentage filled.
+/// I literally only use this for colors, but I built it to be nice and modular in case I needed it elsewhere
+/// (I didn't).
+/// </summary>
 public class Slider
 {
     Rectangle Bar;
@@ -275,6 +391,11 @@ public class Slider
         baseTexture = texture;
     }
 
+    /// <summary>
+    /// Updates the slider.
+    /// This means that it edits the location of the knob, and changes the fraction it represents.
+    /// </summary>
+    /// <param name="state"></param>
     public void updateSlider(MouseState state)
     {
         if (Bar.Contains(state.Position) && state.LeftButton == ButtonState.Pressed)
@@ -285,6 +406,10 @@ public class Slider
         fractionMade = (Knob.Y - Bar.Y) / (float)barLength;
     }
 
+    /// <summary>
+    /// It draws the slider.
+    /// </summary>
+    /// <param name="batch"></param>
     public void drawSlider(SpriteBatch batch)
     {
         Rectangle offsetSection = new(
@@ -301,6 +426,11 @@ public class Slider
     }
 }
 
+/// <summary>
+/// Class that implements the sliders to be used as color setters.
+/// Stores 3 sliders - red green and blue.
+/// Also mixes a color in the update method.
+/// </summary>
 public class SliderColorMaker
 {
     int xPos;
@@ -325,6 +455,11 @@ public class SliderColorMaker
         color = Color.Black;
     }
 
+    /// <summary>
+    /// Updates all the sliders.
+    /// Also computes a new value for the color stored.
+    /// </summary>
+    /// <param name="state"></param>
     public void updateSliders(MouseState state)
     {
         foreach (Slider slider in sliders)
@@ -339,6 +474,10 @@ public class SliderColorMaker
         color = new(red, green, blue);
     }
 
+    /// <summary>
+    /// It draws the sliders.
+    /// </summary>
+    /// <param name="batch"></param>
     public void drawSliders(SpriteBatch batch)
     {
         foreach (Slider slider in sliders)

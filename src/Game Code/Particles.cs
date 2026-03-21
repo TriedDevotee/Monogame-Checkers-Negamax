@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// Class that handles basic particle logic. Used in Game Background screens
+/// </summary>
 public class GameParticle
 {
     Texture2D particleTexture;
@@ -50,6 +53,12 @@ public class GameParticle
         opacity = startOpacity;
     }
 
+    /// <summary>
+    /// Tracks the life, position and velocity of the particle.
+    /// Uses trigonometry to best calculate the vectors.
+    /// Also kills the particle (sets life to 0) if Out Of Bounds
+    /// </summary>
+    /// <param name="dt"></param>
     public void UpdateParticle(float dt)
     {
         speed += acceleration * dt;
@@ -70,11 +79,22 @@ public class GameParticle
 
     }
 
+    /// <summary>
+    /// Tracks if the particles position is significantly out of the borders of the screen
+    /// </summary>
+    /// <returns></returns>
     public bool isOOB()
     {
         return position.X < -50 || position.X > screenWidth + 50 || position.Y < -50 || position.Y > screenHeight + 50;
     }
 
+    /// <summary>
+    /// Draws the particle. Also assigns the color based off its angle in the rotation
+    /// (angle is assigned at instantiation).
+    /// </summary>
+    /// <param name="sprites"></param>
+    /// <param name="texture"></param>
+    /// <param name="transformer"></param>
     public void Draw(SpriteBatch sprites, Texture2D texture, Vector2 transformer)
     {
 
@@ -88,9 +108,9 @@ public class GameParticle
         const float radConst = (float) Math.PI / 180.0f;
 
         color = new Color(
-            (MathF.Cos(life) + 1f) * 0.5f, 
-            (MathF.Cos(life + 120 * radConst) + 1f) * 0.5f, 
-            (MathF.Cos(life + 240 * radConst) + 1f) * 0.5f);
+            (MathF.Cos(angle) + 1f) * 0.5f, 
+            (MathF.Cos(angle + 120 * radConst) + 1f) * 0.5f, 
+            (MathF.Cos(angle + 240 * radConst) + 1f) * 0.5f);
 
         sprites.Draw(
             texture, 
@@ -107,13 +127,18 @@ public class GameParticle
     }
 }
 
+/// <summary>
+/// Tracks all particles. Renders them and creates their angles on instantiation.
+/// </summary>
 public class GameBackground
 {
     static readonly Random randint = new Random();
     List<GameParticle> particles;
     Vector2 centrePoint;
     Texture2D particleTexture;
-    Vector2 transformer = new Vector2(0.0f, 0.0f);
+    
+    //Allows for translational particles to be rendered. Never really used
+    Vector2 transformer = new Vector2(0.0f, -0.0f);
 
     float screenWidth;
     float screenHeight;
@@ -133,6 +158,9 @@ public class GameBackground
         frameZeroSetup();
     }
 
+    /// <summary>
+    /// Makes new particle. Adds it to the lsit of particles. Also assigns angles based off a constant changing variable.
+    /// </summary>
     public void AddParticles()
     {
 
@@ -148,6 +176,7 @@ public class GameBackground
             startOpacity: 0.5f
         );
 
+        //Constant angle incrementer
         angle += 0.2f;
 
 
@@ -156,6 +185,9 @@ public class GameBackground
         centrePoint += transformer;
     }
 
+    /// <summary>
+    /// Renders 2000 particles to mean the background looks cool from the start
+    /// </summary>
     public void frameZeroSetup()
     {
         for (int i = 0; i < 2000; i++)
@@ -165,6 +197,10 @@ public class GameBackground
         }   
     }
 
+    /// <summary>
+    /// Runs update on all the particles. Takes the difference in time between frames. 
+    /// </summary>
+    /// <param name="dt"></param>
     public void updateParticles(float dt)
     {
         foreach (GameParticle particle in particles)
@@ -172,11 +208,17 @@ public class GameBackground
             particle.UpdateParticle(dt);
         }
 
-        particles.RemoveAll(p => p.life == 0.0f);
+        //Removes all the "dead" particles (life <= 0)
+        particles.RemoveAll(p => p.life <= 0.0f);
 
         UpdateTransformer();
     }
 
+    /// <summary>
+    /// Draws all the particles. Passes in texture and spriteBatch
+    /// </summary>
+    /// <param name="sprite"></param>
+    /// <param name="texture"></param>
     public void drawParticles(SpriteBatch sprite, Texture2D texture)
     {
         foreach (GameParticle particle in particles)
@@ -185,13 +227,28 @@ public class GameBackground
         }
     }
 
+    /// <summary>
+    /// Updates the transformer
+    /// </summary>
     public void UpdateTransformer()
     {
+        //Handles the transformer, by increasing the vector by a constant, and flipping the vector at border points
+
+        /*transformer.X += 0.2f;
+        transformer.Y += 0.2f;
+
         if (centrePoint.X > screenWidth || centrePoint.X < 0.0f) transformer.X *= -1;
         if (centrePoint.Y > screenHeight || centrePoint.Y < 0.0f) transformer.Y *= -1;
+
+        if (centrePoint.X > screenHeight + 50 || centrePoint.X < -50.0f) centrePoint.X = randint.Next(1, (int) screenWidth);
+        if (centrePoint.Y > screenHeight + 50 || centrePoint.Y < -50.0f) centrePoint.Y = randint.Next(1, (int) screenHeight);*/
+
     }
 }
 
+/// <summary>
+/// Simple particle design, which is merely a square which is pushed across the screen by a constant pixel step
+/// </summary>
 public class MenuParticle
 {
     public Vector2 Position {get; private set;}
@@ -211,23 +268,31 @@ public class MenuParticle
         ParticleColor = color;
     }
 
-    public void UpdateParticle()
-    {
-        Position = new Vector2(Position.X - 3, Position.Y);
-    }
-
+    /// <summary>
+    /// Draws the particle
+    /// </summary>
+    /// <param name="spriteBatch"></param>
     public void Draw(SpriteBatch spriteBatch)
     {
         Rectangle ParticlePosition = new((int) Position.X, (int) Position.Y, width, height);
         spriteBatch.Draw(particleTexture, ParticlePosition, ParticleColor);
     }
 
+    /// <summary>
+    /// Moves the particle by the necessary values inputted to it
+    /// Note: y is never used, but is present to ensure modularity of the program
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
     public void moveParticle(float x, float y)
     {
         Position = new Vector2(Position.X + x, Position.Y + y);
     }
 }
 
+/// <summary>
+/// Handles the particles for the menu's implementation
+/// </summary>
 public class MenuBackground
 {
     Session session;
@@ -244,6 +309,10 @@ public class MenuBackground
         Particles = PopulateParticles();
     }
 
+    /// <summary>
+    /// Assigns all the particles to the List<MenuParticle> to be ready for rendering
+    /// </summary>
+    /// <returns></returns>
     private List<MenuParticle> PopulateParticles()
     {
         List<MenuParticle> particles = [];
@@ -309,6 +378,11 @@ public class MenuBackground
         return particles;
     }
 
+    /// <summary>
+    /// Updates all the particles. Takes in the change in time, and changes the particles by that times the constant speed value.
+    /// Note: The particles are transformed by -speed because I wanted them to go backwards across the screen
+    /// </summary>
+    /// <param name="dt"></param>
     public void update(float dt)
     {
         float speed = 100f;
@@ -317,6 +391,7 @@ public class MenuBackground
         {
             particle.moveParticle(-speed * dt, 0);
 
+            //Teleports the particles back if they're offscreen
             if (particle.Position.X <= -particleSize)
             {
                 particle.moveParticle(particleSize * (numColumns), 0);
@@ -324,6 +399,10 @@ public class MenuBackground
         }
     }
 
+    /// <summary>
+    /// Draws ever recorded particle
+    /// </summary>
+    /// <param name="spriteBatch"></param>
     public void Draw(SpriteBatch spriteBatch)
     {
         foreach (MenuParticle particle in Particles)

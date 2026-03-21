@@ -1,4 +1,8 @@
-
+/// <summary>
+/// Class that tracks the move made by user. Default values are -1 and -1 for start and moveTo. 
+/// Fills start if start = -1, or both start and moveTo aren't -1
+/// Otherwise fill moveTo
+/// </summary>
 public class moveCache
 {
     public int start {get; private set;}
@@ -13,6 +17,11 @@ public class moveCache
         indexFilling = 0;
     }
 
+    /// <summary>
+    /// Sets the value of the cache with the square number given
+    /// Called in session exclusively for encapsulations sake. (this needs to not be tampered with)
+    /// </summary>
+    /// <param name="square"></param>
     public void SetValue(int square)
     {
         if (start == square && start != -1)
@@ -39,6 +48,9 @@ public class moveCache
         }
     }
 
+    /// <summary>
+    /// Resets all the values to default values (-1, -1)
+    /// </summary>
     public void clearCache()
     {
         start = -1;
