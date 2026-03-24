@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Checkers;
 using System.Linq;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 /// <summary>
 /// Stores all the available screen types.
@@ -146,17 +147,23 @@ public class GameScreen : IScreen
         if (currPlayer == PlayerType.Human)
         { 
             session.setPlayerColor(session.Game.moves.WhiteTurn);
+
+            Console.WriteLine($"Gamewise player color is {session.IsPlayerWhite}");
+
             if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
                 moveCache inpMove = new(63-session.PlayedMove.start, 63-session.PlayedMove.moveTo);
+
+                Console.WriteLine($"Start: {session.PlayedMove.start}, MoveTo: {session.PlayedMove.moveTo}");
+                Console.WriteLine($"Trying move: {inpMove.start} -> {inpMove.moveTo}");
 
                 bool movePlayed = session.Game.MakeHumanMove(inpMove);
 
                 if (movePlayed){
                     session.SetState(GameState.MoveResolved);
-                    session.UpdateMove(new moveCache(session.PlayedMove.start, -1));
+                    session.UpdateMove(new moveCache());
                 }
 
-                if (session.state == GameState.MoveResolved && !session.Game.waitingForBranchInput)
+                if (session.state == GameState.MoveResolved)
                 {
                     session.SetState(GameState.BotMoving);
                     UpdatePositionLog();

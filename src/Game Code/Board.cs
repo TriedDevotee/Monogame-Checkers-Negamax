@@ -226,6 +226,8 @@ public class Board
             
             if (flipBoard)
             {
+                Console.WriteLine("Board flipping");
+
                 int x = selectedShapeIndex / 8;
                 int y = selectedShapeIndex % 8;
 
@@ -241,6 +243,9 @@ public class Board
 
             if (shapes.getSelectedShapes(selectedShapeIndex).isClicked)
             {
+                Console.WriteLine($"Square {selectedShapeIndex} has been clicked.");
+                if (IsClickableSquare) Console.WriteLine($"This is a clickable square");
+
                 if (session.PlayedMove.start == -1){
                     if (IsClickableSquare)
                     {

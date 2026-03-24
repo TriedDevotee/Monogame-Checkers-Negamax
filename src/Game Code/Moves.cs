@@ -14,7 +14,12 @@ public class moveCache
         start = s;
         moveTo = m;
 
-        indexFilling = 0;
+        if (start == -1)
+            indexFilling = 0;
+        else if (moveTo == -1)
+            indexFilling = 1;
+        else
+            indexFilling = 0;
     }
 
     /// <summary>

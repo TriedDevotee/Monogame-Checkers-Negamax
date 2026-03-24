@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Checkers
@@ -87,6 +88,7 @@ namespace Checkers
         {
             for (int i = 0; i < moves.Length; i++)
             {
+                Console.WriteLine($"New move found! {moves[i].start} to {moves[i].moveTo} taking {moves[i].captureSquare}");
                 if (moves[i].start == moveCode.start && moves[i].moveTo == moveCode.moveTo)
                 {
                     return i;
@@ -194,7 +196,7 @@ namespace Checkers
         {
             ChainTree chains = new ChainTree(currentPosition, moves.WhiteTurn);
 
-            ChainNode node = new ChainNode();
+            ChainNode node = new ChainNode(new(-1, -1));
 
             foreach (ChainNode root in chains.CaptureTree)
             {
@@ -205,9 +207,21 @@ namespace Checkers
                 }
             }
             
+            if (node.move.start == -1 && node.move.moveTo == -1)
+            {
+                Console.WriteLine("ERROR: No matching chain node found");
+                waitingForBranchInput = false;
+                return;
+            }
+
             List<List<ChainNode>> allPaths = chainTraverser(node);
 
             List<moveData> chosenPath = buildPathingTree(allPaths);
+
+            if (waitingForBranchInput)
+            {
+                return;
+            }
 
             for (int i = 0; i < chosenPath.Count; i++)
             {
@@ -266,9 +280,7 @@ namespace Checkers
                     finalPath.Add(Deviants[0]);
                 } else if (Deviants.Count > 1)
                 {
-                    waitingForBranchInput = true;
-
-                    return finalPath;
+                    finalPath.Add(Deviants[0]);
                 }
 
                 generation++;
