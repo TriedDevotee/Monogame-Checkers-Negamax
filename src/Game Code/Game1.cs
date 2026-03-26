@@ -145,6 +145,10 @@ public class Session
 
         ValidClickChecker = true;
         Game.previousPositions.Clear();
+
+        Game.previousPositions.Add(
+            CurrentPosition
+        );
     }
 
     /// <summary>

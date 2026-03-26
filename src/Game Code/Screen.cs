@@ -148,17 +148,13 @@ public class GameScreen : IScreen
         { 
             session.setPlayerColor(session.Game.moves.WhiteTurn);
 
-            Console.WriteLine($"Gamewise player color is {session.IsPlayerWhite}");
-
             if (session.PlayedMove.start != -1 && session.PlayedMove.moveTo != -1){
                 moveCache inpMove = new(63-session.PlayedMove.start, 63-session.PlayedMove.moveTo);
-
-                Console.WriteLine($"Start: {session.PlayedMove.start}, MoveTo: {session.PlayedMove.moveTo}");
-                Console.WriteLine($"Trying move: {inpMove.start} -> {inpMove.moveTo}");
 
                 bool movePlayed = session.Game.MakeHumanMove(inpMove);
 
                 if (movePlayed){
+                    UpdatePositionLog();
                     session.SetState(GameState.MoveResolved);
                     session.UpdateMove(new moveCache());
                 }
@@ -166,7 +162,6 @@ public class GameScreen : IScreen
                 if (session.state == GameState.MoveResolved)
                 {
                     session.SetState(GameState.BotMoving);
-                    UpdatePositionLog();
 
                     if (runFlipping)
                     {
@@ -240,6 +235,8 @@ public class GameScreen : IScreen
     /// </summary>
     private void UpdatePositionLog()
     {
+        Console.WriteLine($"Length of positions is {session.Game.previousPositions.Count}");
+
        session.Game.previousPositions.Add(
             new Position(
                 session.Game.moves.WhitePieces.board, 
@@ -251,6 +248,8 @@ public class GameScreen : IScreen
         session.UpdatePosition(session.Game.previousPositions.Last()); 
 
         session.IndexOfCurrentPosition++;
+
+        Console.WriteLine($"Added position {session.IndexOfCurrentPosition}");
     }  
 }
 

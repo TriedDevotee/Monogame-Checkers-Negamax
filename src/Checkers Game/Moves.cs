@@ -24,8 +24,8 @@ namespace Checkers
             BlackPieces = new Bitboard(blackStart);
             Kings = new Bitboard(kingstart);
 
-            WhitePieces = new Bitboard(0x0000000000008000);
-            BlackPieces = new Bitboard(0x0014001400400000);
+            //WhitePieces = new Bitboard(0x0000000000000040);
+            //BlackPieces = new Bitboard(0x0000000008000000);
 
             masks = new PieceMasks();
             AllPieces = new Bitboard(WhitePieces.board | BlackPieces.board);
